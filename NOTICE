@@ -1,0 +1,5 @@
+The web API protocol (request encoding, login and DSL status fields) was
+derived from draytek_exporter by Ben Kochie
+(https://github.com/SuperQ/draytek_exporter), licensed under the Apache
+License, Version 2.0. No source code was copied; the protocol was
+reimplemented in Python.

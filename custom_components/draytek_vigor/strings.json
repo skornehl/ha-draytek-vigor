@@ -1,0 +1,103 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DrayTek Vigor",
+        "description": "Web login of the modem. HTTP management must be enabled and \"Force HTTPS\" off.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "DrayTek Vigor",
+        "description": "The login was rejected.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the modem's web API (is \"Force HTTPS\" on?)",
+      "invalid_auth": "Username or password wrong"
+    },
+    "abort": {
+      "already_configured": "This modem is already set up",
+      "reauth_successful": "Login updated"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dsl_sync": {
+        "name": "DSL sync"
+      }
+    },
+    "sensor": {
+      "line_status": {
+        "name": "Line status"
+      },
+      "mode": {
+        "name": "Mode"
+      },
+      "profile": {
+        "name": "Profile"
+      },
+      "annex": {
+        "name": "Annex"
+      },
+      "dsl_version": {
+        "name": "DSL firmware"
+      },
+      "rate_down": {
+        "name": "Sync rate downstream"
+      },
+      "rate_up": {
+        "name": "Sync rate upstream"
+      },
+      "attainable_down": {
+        "name": "Attainable rate downstream"
+      },
+      "attainable_up": {
+        "name": "Attainable rate upstream"
+      },
+      "snr_down": {
+        "name": "SNR margin downstream"
+      },
+      "snr_up": {
+        "name": "SNR margin upstream"
+      },
+      "attenuation_near": {
+        "name": "Attenuation near end"
+      },
+      "attenuation_far": {
+        "name": "Attenuation far end"
+      },
+      "crc_near": {
+        "name": "CRC near end"
+      },
+      "crc_far": {
+        "name": "CRC far end"
+      },
+      "es_near": {
+        "name": "ES near end"
+      },
+      "es_far": {
+        "name": "ES far end"
+      },
+      "ses_near": {
+        "name": "SES near end"
+      },
+      "ses_far": {
+        "name": "SES far end"
+      },
+      "uas_near": {
+        "name": "UAS near end"
+      },
+      "uas_far": {
+        "name": "UAS far end"
+      }
+    }
+  }
+}

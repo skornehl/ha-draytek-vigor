@@ -1,0 +1,103 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DrayTek Vigor",
+        "description": "Web-Zugang des Modems. Die Verwaltung per HTTP muss aktiv und „Force HTTPS“ aus sein.",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      },
+      "reauth_confirm": {
+        "title": "DrayTek Vigor",
+        "description": "Die Anmeldung wurde abgelehnt.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Web-API des Modems nicht erreichbar (ist „Force HTTPS“ an?)",
+      "invalid_auth": "Benutzername oder Passwort falsch"
+    },
+    "abort": {
+      "already_configured": "Dieses Modem ist schon eingerichtet",
+      "reauth_successful": "Anmeldung aktualisiert"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dsl_sync": {
+        "name": "DSL-Synchronisation"
+      }
+    },
+    "sensor": {
+      "line_status": {
+        "name": "Leitungsstatus"
+      },
+      "mode": {
+        "name": "Modus"
+      },
+      "profile": {
+        "name": "Profil"
+      },
+      "annex": {
+        "name": "Annex"
+      },
+      "dsl_version": {
+        "name": "DSL-Firmware"
+      },
+      "rate_down": {
+        "name": "Sync-Rate Download"
+      },
+      "rate_up": {
+        "name": "Sync-Rate Upload"
+      },
+      "attainable_down": {
+        "name": "Erreichbare Rate Download"
+      },
+      "attainable_up": {
+        "name": "Erreichbare Rate Upload"
+      },
+      "snr_down": {
+        "name": "SNR-Marge Download"
+      },
+      "snr_up": {
+        "name": "SNR-Marge Upload"
+      },
+      "attenuation_near": {
+        "name": "Dämpfung Near End"
+      },
+      "attenuation_far": {
+        "name": "Dämpfung Far End"
+      },
+      "crc_near": {
+        "name": "CRC Near End"
+      },
+      "crc_far": {
+        "name": "CRC Far End"
+      },
+      "es_near": {
+        "name": "ES Near End"
+      },
+      "es_far": {
+        "name": "ES Far End"
+      },
+      "ses_near": {
+        "name": "SES Near End"
+      },
+      "ses_far": {
+        "name": "SES Far End"
+      },
+      "uas_near": {
+        "name": "UAS Near End"
+      },
+      "uas_far": {
+        "name": "UAS Far End"
+      }
+    }
+  }
+}
