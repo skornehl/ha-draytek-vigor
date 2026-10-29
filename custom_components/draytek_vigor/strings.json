@@ -21,7 +21,8 @@
     },
     "error": {
       "cannot_connect": "Cannot reach the modem's web API (is \"Force HTTPS\" on?)",
-      "invalid_auth": "Username or password wrong"
+      "invalid_auth": "Username or password wrong",
+      "unknown": "Unexpected error, see the log"
     },
     "abort": {
       "already_configured": "This modem is already set up",

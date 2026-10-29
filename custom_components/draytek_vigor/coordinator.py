@@ -10,7 +10,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import InvalidAuth, VigorClient, VigorError
-from .const import DOMAIN, SCAN_INTERVAL_SECONDS
+from .const import DOMAIN, LOGIN_REJECTIONS_BEFORE_REAUTH, SCAN_INTERVAL_SECONDS
 from .protocol import DslStatus
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,11 +30,19 @@ class VigorCoordinator(DataUpdateCoordinator[DslStatus]):
             update_interval=timedelta(seconds=SCAN_INTERVAL_SECONDS),
         )
         self.client = client
+        self._login_rejections = 0
 
     async def _async_update_data(self) -> DslStatus:
         try:
-            return await self.client.async_get_dsl_status()
+            data = await self.client.async_get_dsl_status()
         except InvalidAuth as err:
-            raise ConfigEntryAuthFailed(str(err)) from err
+            # A rejected login can also mean "too many sessions" or a temporary
+            # lockout, so only ask for a new password when it keeps happening.
+            self._login_rejections += 1
+            if self._login_rejections >= LOGIN_REJECTIONS_BEFORE_REAUTH:
+                raise ConfigEntryAuthFailed(str(err)) from err
+            raise UpdateFailed(str(err)) from err
         except VigorError as err:
             raise UpdateFailed(str(err)) from err
+        self._login_rejections = 0
+        return data

@@ -10,7 +10,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 
-from . import create_client
+from . import create_client, normalize_host
 from .api import CannotConnect, InvalidAuth
 from .const import DEFAULT_HOST, DEFAULT_USERNAME, DOMAIN
 
@@ -21,18 +21,25 @@ class VigorConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def _validate(self, data: dict[str, Any]) -> dict[str, str]:
+        client = create_client(self.hass, data)
         try:
-            await create_client(self.hass, data).async_get_dsl_status()
+            await client.async_get_dsl_status()
         except InvalidAuth:
             return {"base": "invalid_auth"}
         except CannotConnect as err:
             _LOGGER.debug("Cannot connect: %s", err)
             return {"base": "cannot_connect"}
+        except Exception:
+            _LOGGER.exception("Unexpected error while validating the modem")
+            return {"base": "unknown"}
+        finally:
+            await client.async_close()
         return {}
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
+            user_input = {**user_input, CONF_HOST: normalize_host(user_input[CONF_HOST])}
             await self.async_set_unique_id(user_input[CONF_HOST])
             self._abort_if_unique_id_configured()
             if not (errors := await self._validate(user_input)):
