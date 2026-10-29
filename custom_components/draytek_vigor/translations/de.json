@@ -21,7 +21,8 @@
     },
     "error": {
       "cannot_connect": "Web-API des Modems nicht erreichbar (ist „Force HTTPS“ an?)",
-      "invalid_auth": "Benutzername oder Passwort falsch"
+      "invalid_auth": "Benutzername oder Passwort falsch",
+      "unknown": "Unerwarteter Fehler, siehe Log"
     },
     "abort": {
       "already_configured": "Dieses Modem ist schon eingerichtet",

@@ -15,5 +15,5 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: VigorCo
     data = entry.runtime_data.data
     return {
         "entry": async_redact_data(dict(entry.data), {CONF_PASSWORD, CONF_USERNAME}),
-        "status": asdict(data) if data else None,
+        "status": asdict(data) if data is not None else None,
     }

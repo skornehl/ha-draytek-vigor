@@ -104,3 +104,14 @@ def test_parse_missing_setting():
         protocol.parse_dsl_status({"rid": "0000", "ct": [{"0MONITORING_DSL_GENERAL": []}]})
     with pytest.raises(protocol.ProtocolError):
         protocol.parse_dsl_status({"rid": "0000"})
+
+
+def test_rates_are_normalised_to_kbps():
+    data = json.loads(json.dumps(SAMPLE))
+    rows = data["ct"][0]["0MONITORING_DSL_GENERAL"][0]["Stream_Table"]
+    rows[0].update(Downstream="116.8 Mbps", Upstream="46719000 bps")
+    rows[1].update(Downstream="131000", Upstream="50 furlongs")
+    s = protocol.parse_dsl_status(data)
+    assert s.stream["Actual Rate"] == (116800, 46719)
+    assert s.stream["Attainable Rate"] == (131000, None)
+    assert s.stream["SNR Margin"] == (9.3, 8)

@@ -16,12 +16,23 @@ PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 def create_client(hass: HomeAssistant, data: dict) -> VigorClient:
     # Own session: the router's cookie must not leak into HA's shared jar, and
     # unsafe=True is needed to keep cookies set by an IP address.
+    # Closed by the caller (entry unload, end of config-flow validation).
     session = async_create_clientsession(hass, cookie_jar=aiohttp.CookieJar(unsafe=True))
-    return VigorClient(session, data[CONF_HOST], data[CONF_USERNAME], data[CONF_PASSWORD])
+    return VigorClient(session, normalize_host(data[CONF_HOST]), data[CONF_USERNAME], data[CONF_PASSWORD])
+
+
+def normalize_host(host: str) -> str:
+    """'  HTTP://Vigor.local/ ' -> 'vigor.local'."""
+    host = host.strip().lower()
+    for prefix in ("http://", "https://"):
+        host = host.removeprefix(prefix)
+    return host.rstrip("/")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> bool:
-    coordinator = VigorCoordinator(hass, entry, create_client(hass, entry.data))
+    client = create_client(hass, entry.data)
+    entry.async_on_unload(client.async_close)
+    coordinator = VigorCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

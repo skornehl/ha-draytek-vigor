@@ -93,6 +93,22 @@ def _number(value: Any) -> float | None:
     return int(number) if number.is_integer() else number
 
 
+_RATE_FACTOR = {"bps": 0.001, "kbps": 1, "mbps": 1000, "gbps": 1_000_000}
+
+
+def _kbps(value: Any) -> float | None:
+    """Rate in kbit/s: '52044 kbps' -> 52044, '116.8 Mbps' -> 116800; unknown unit -> None."""
+    number = _number(value)
+    if number is None or not isinstance(value, str):
+        return number
+    parts = value.split()
+    factor = _RATE_FACTOR.get(parts[1].lower()) if len(parts) > 1 else 1
+    if factor is None:
+        return None
+    result = number * factor
+    return int(result) if float(result).is_integer() else result
+
+
 def _option(value: Any) -> bool | None:
     if value == "ON":
         return True
@@ -118,7 +134,8 @@ def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
     )
     for row in setting.get("Stream_Table") or []:
         if name := row.get("Name"):
-            status.stream[name] = (_number(row.get("Downstream")), _number(row.get("Upstream")))
+            conv = _kbps if name.endswith("Rate") else _number
+            status.stream[name] = (conv(row.get("Downstream")), conv(row.get("Upstream")))
     for row in setting.get("End_Table") or []:
         if name := row.get("Name"):
             near, far = row.get("Near_End"), row.get("Far_End")
