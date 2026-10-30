@@ -3,7 +3,9 @@
 Reads the DSL line values of a **DrayTek Vigor 167** modem (firmware 5.x)
 through its web API and shows them in Home Assistant. Read-only.
 
-> **Status: 0.1.0, not yet tested against a real device.** The protocol is
+> **Status: 0.1.0.** Login and the DSL status request are tested against a
+> Vigor 167 (DSL firmware 5.12.31.0) without a DSL line; the line values
+> (rates, SNR, counters) are not yet seen with a synced line. The protocol is
 > taken from [SuperQ/draytek_exporter](https://github.com/SuperQ/draytek_exporter),
 > which supports the Vigor 167 with v5 firmware.
 

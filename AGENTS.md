@@ -8,9 +8,9 @@ Home Assistant custom integration (HACS) for the DrayTek Vigor 167 DSL modem.
 - `custom_components/draytek_vigor/protocol.py` holds encoding and parsing and
   must not import Home Assistant or aiohttp, so `tests/test_protocol.py` runs
   without them. Every parser change needs a test.
-- Field names come from SuperQ/draytek_exporter (see NOTICE). Once real
-  diagnostics exist, replace the sample in the tests with a captured, anonymised
-  response.
+- Field names come from SuperQ/draytek_exporter (see NOTICE) and match a real
+  Vigor 167 response (`tests/fixtures/dsl_status_idle_fw5.json`, no line
+  plugged in). Add a captured fixture with a synced line once there is one.
 - The aiohttp session needs `CookieJar(unsafe=True)`: the modem is addressed by
   IP and aiohttp drops cookies from IP hosts otherwise.
 - `strings.json`, `translations/en.json` and `translations/de.json` stay

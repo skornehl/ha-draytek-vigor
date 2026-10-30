@@ -115,3 +115,14 @@ def test_rates_are_normalised_to_kbps():
     assert s.stream["Actual Rate"] == (116800, 46719)
     assert s.stream["Attainable Rate"] == (131000, None)
     assert s.stream["SNR Margin"] == (9.3, 8)
+
+
+def test_real_idle_response():
+    """Captured from a Vigor 167 (DSL firmware 5.12.31.0) with no DSL line plugged in."""
+    data = json.loads((Path(__file__).parent / "fixtures" / "dsl_status_idle_fw5.json").read_text())
+    assert protocol.is_ok(data)
+    s = protocol.parse_dsl_status(data)
+    assert (s.status, s.mode, s.profile) == ("Idle", "DSL", "--")
+    assert s.dsl_version == "5.12.31.0_A_A60901"
+    assert s.stream == {} and s.end == {}
+    assert protocol.decode(protocol.encode(data)) == data
