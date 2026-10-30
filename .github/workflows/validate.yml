@@ -8,6 +8,9 @@ on:
 jobs:
   hacs:
     name: HACS
+    # The HACS action refuses private repositories; skip instead of failing
+    # until the repository is made public.
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - name: HACS validation

@@ -35,6 +35,7 @@ LOGIN_PID = EVENT_PID
 LOGIN_OP = "552"
 LOGOUT_OP = "553"
 REBOOT_PID = "0REBOOT"
+REBOOT_READ_OP = "501"
 REBOOT_OP = "555"
 REBOOT_QUERY = {"param": [], "ct": [{REBOOT_PID: []}]}
 # The modem answers an accepted reboot with "0006@1POP_REBOOTING".
