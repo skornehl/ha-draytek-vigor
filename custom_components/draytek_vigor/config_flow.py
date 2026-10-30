@@ -21,7 +21,7 @@ class VigorConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def _validate(self, data: dict[str, Any]) -> dict[str, str]:
-        client = create_client(self.hass, data)
+        client = create_client(self.hass, data, auto_cleanup=False)
         try:
             await client.async_get_dsl_status()
         except InvalidAuth:
