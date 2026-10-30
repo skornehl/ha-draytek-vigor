@@ -24,6 +24,11 @@ class VigorRebootButton(VigorEntity, ButtonEntity):
     _attr_device_class = ButtonDeviceClass.RESTART
     _attr_entity_category = EntityCategory.CONFIG
 
+    @property
+    def available(self) -> bool:
+        # Stay usable when polling fails - that is when a reboot is needed most.
+        return True
+
     async def async_press(self) -> None:
         try:
             await self.coordinator.client.async_reboot()
