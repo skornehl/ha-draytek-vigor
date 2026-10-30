@@ -35,6 +35,11 @@
         "name": "DSL sync"
       }
     },
+    "button": {
+      "reboot": {
+        "name": "Reboot modem"
+      }
+    },
     "sensor": {
       "line_status": {
         "name": "Line status"
