@@ -13,11 +13,15 @@ from .coordinator import VigorConfigEntry, VigorCoordinator
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.BUTTON, Platform.SENSOR]
 
 
-def create_client(hass: HomeAssistant, data: dict) -> VigorClient:
+def create_client(hass: HomeAssistant, data: dict, auto_cleanup: bool = True) -> VigorClient:
     # Own session: the router's cookie must not leak into HA's shared jar, and
-    # unsafe=True is needed to keep cookies set by an IP address.
-    # Closed by the caller (entry unload, end of config-flow validation).
-    session = async_create_clientsession(hass, cookie_jar=aiohttp.CookieJar(unsafe=True))
+    # unsafe=True is needed to keep cookies set by an IP address. HA owns the
+    # session: during entry setup it is detached on unload (auto_cleanup); the
+    # config flow passes auto_cleanup=False and detaches it via async_close.
+    # Never close() it - HA warns, the connector is shared.
+    session = async_create_clientsession(
+        hass, auto_cleanup=auto_cleanup, cookie_jar=aiohttp.CookieJar(unsafe=True)
+    )
     return VigorClient(session, normalize_host(data[CONF_HOST]), data[CONF_USERNAME], data[CONF_PASSWORD])
 
 
@@ -31,7 +35,7 @@ def normalize_host(host: str) -> str:
 
 async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> bool:
     client = create_client(hass, entry.data)
-    entry.async_on_unload(client.async_close)
+    entry.async_on_unload(client.async_logout)
 
     async def _logout_on_stop(_event: Event) -> None:
         # Entries are not unloaded on shutdown; log out so restarts do not

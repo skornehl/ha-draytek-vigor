@@ -181,5 +181,6 @@ class VigorClient:
             await self._logout_unlocked()
 
     async def async_close(self) -> None:
+        """Log out and release a session created with auto_cleanup=False."""
         await self.async_logout()
-        await self._session.close()
+        self._session.detach()
