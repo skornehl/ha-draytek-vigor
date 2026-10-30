@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import aiohttp
 
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import VigorClient
@@ -32,6 +32,13 @@ def normalize_host(host: str) -> str:
 async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> bool:
     client = create_client(hass, entry.data)
     entry.async_on_unload(client.async_close)
+
+    async def _logout_on_stop(_event: Event) -> None:
+        # Entries are not unloaded on shutdown; log out so restarts do not
+        # leave web sessions behind on the modem.
+        await client.async_logout()
+
+    entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _logout_on_stop))
     coordinator = VigorCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
