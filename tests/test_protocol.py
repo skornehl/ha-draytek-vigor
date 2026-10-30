@@ -126,3 +126,31 @@ def test_real_idle_response():
     assert s.dsl_version == "5.12.31.0_A_A60901"
     assert s.stream == {} and s.end == {}
     assert protocol.decode(protocol.encode(data)) == data
+
+
+def test_reboot_payload_forces_current_configuration():
+    record = protocol.parse_reboot_record(
+        {"rid": "0000", "ct": [{"0REBOOT": [{"Name": "Setting", "Reboot_With": "Factory Default Configuration", "Reboot_Button": ""}]}]}
+    )
+    payload = protocol.reboot_payload(record)
+    entry = payload["ct"][0]["0REBOOT"][0]
+    assert entry["name"] == "Setting"
+    assert entry["data"]["Reboot_With"] == "Current Configuration"
+    assert record["Reboot_With"] == "Factory Default Configuration"  # input untouched
+
+
+def test_reboot_record_missing():
+    for data in ({"rid": "0000", "ct": [{"0REBOOT": []}]}, {"rid": "0000"}, {"ct": [{"0REBOOT": ["x"]}]}):
+        with pytest.raises(protocol.ProtocolError):
+            protocol.parse_reboot_record(data)
+
+
+def test_reboot_accepted():
+    # Answers seen on a Vigor 167, 2026-10-30.
+    assert protocol.is_reboot_accepted({"rid": "0006@1POP_REBOOTING"})
+    assert not protocol.is_reboot_accepted({"rid": "2033_out_op(555)_tm(1)_stm(1)_2_ip(x)"})
+    assert not protocol.is_reboot_accepted({})
+
+
+def test_logout_payload():
+    assert protocol.logout_payload("admin") == {"param": [], "ct": [{"Username": "admin"}]}

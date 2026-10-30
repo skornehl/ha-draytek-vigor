@@ -6,7 +6,12 @@ runs without either.
 The protocol was taken from SuperQ/draytek_exporter (Apache-2.0, Ben Kochie),
 see NOTICE:
 
-* POST form to /cgi-bin/webproc.cgi with pid, op, ct and _token (CSRF).
+* POST form to /cgi-bin/webproc.cgi with pid, op and ct.
+* CSRF: the modem sends a token in the response header x-csrf-token; the
+  client returns the latest one as that header and as form field _token.
+  Reads work without it, writes (reboot) answer rid 2033 "Login Timeout"
+  otherwise (found against a Vigor 167, 2026-10-30; the exporter sends a
+  random token and only reads).
 * ct is JSON in base64 whose padding moved to the front: the number of "="
   becomes the first character and the trailing "=" are dropped. Responses
   use the same encoding.
@@ -23,8 +28,18 @@ from typing import Any
 PATH = "/cgi-bin/webproc.cgi"
 RID_OK = "0000"
 
-LOGIN_PID = "event"
+CSRF_HEADER = "x-csrf-token"
+
+EVENT_PID = "event"
+LOGIN_PID = EVENT_PID
 LOGIN_OP = "552"
+LOGOUT_OP = "553"
+REBOOT_PID = "0REBOOT"
+REBOOT_OP = "555"
+REBOOT_QUERY = {"param": [], "ct": [{REBOOT_PID: []}]}
+# The modem answers an accepted reboot with "0006@1POP_REBOOTING".
+RID_REBOOTING = "0006"
+REBOOT_WITH_CURRENT = "Current Configuration"
 DSL_PID = "0MONITORING_DSL_GENERAL"
 DSL_OP = "501"
 DSL_QUERY = {
@@ -62,8 +77,36 @@ def login_payload(username: str, password: str) -> dict[str, Any]:
     return {"param": [], "ct": [{"Name": username, "Password": digest, "locales": "en"}]}
 
 
+def logout_payload(username: str) -> dict[str, Any]:
+    return {"param": [], "ct": [{"Username": username}]}
+
+
 def is_ok(data: dict[str, Any]) -> bool:
     return str(data.get("rid")) == RID_OK
+
+
+def parse_reboot_record(data: dict[str, Any]) -> dict[str, Any]:
+    try:
+        record = data["ct"][0][REBOOT_PID][0]
+    except (KeyError, IndexError, TypeError) as err:
+        raise ProtocolError("no reboot record in response") from err
+    if not isinstance(record, dict) or "Name" not in record:
+        raise ProtocolError("reboot record has no Name")
+    return record
+
+
+def reboot_payload(record: dict[str, Any]) -> dict[str, Any]:
+    """Payload the web UI sends for System Reboot.
+
+    Reboot_With is forced to the current configuration: the same form can
+    also reboot into factory defaults.
+    """
+    data = {**record, "Reboot_With": REBOOT_WITH_CURRENT}
+    return {"param": [], "ct": [{REBOOT_PID: [{"name": record["Name"], "data": data}]}]}
+
+
+def is_reboot_accepted(data: dict[str, Any]) -> bool:
+    return str(data.get("rid", "")).split("@")[0] in (RID_REBOOTING, RID_OK)
 
 
 @dataclass

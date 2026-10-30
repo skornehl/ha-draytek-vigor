@@ -10,7 +10,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from .api import VigorClient
 from .coordinator import VigorConfigEntry, VigorCoordinator
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.BUTTON, Platform.SENSOR]
 
 
 def create_client(hass: HomeAssistant, data: dict) -> VigorClient:

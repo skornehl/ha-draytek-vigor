@@ -35,6 +35,11 @@
         "name": "DSL-Synchronisation"
       }
     },
+    "button": {
+      "reboot": {
+        "name": "Modem neu starten"
+      }
+    },
     "sensor": {
       "line_status": {
         "name": "Leitungsstatus"
