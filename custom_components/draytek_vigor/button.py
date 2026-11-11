@@ -8,6 +8,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .api import VigorError
+from .const import DOMAIN
 from .coordinator import VigorConfigEntry
 from .entity import VigorEntity
 
@@ -33,4 +34,8 @@ class VigorRebootButton(VigorEntity, ButtonEntity):
         try:
             await self.coordinator.client.async_reboot()
         except VigorError as err:
-            raise HomeAssistantError(f"Reboot failed: {err}") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="reboot_failed",
+                translation_placeholders={"error": str(err)},
+            ) from err

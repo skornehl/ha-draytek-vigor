@@ -1,14 +1,17 @@
 """Setup, entities, reauth after repeated login rejections, diagnostics."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from homeassistant.config_entries import SOURCE_REAUTH, ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from custom_components.draytek_vigor.api import InvalidAuth
+from custom_components.draytek_vigor.api import CannotConnect, InvalidAuth
 from custom_components.draytek_vigor.const import DOMAIN, LOGIN_REJECTIONS_BEFORE_REAUTH
 from custom_components.draytek_vigor.diagnostics import async_get_config_entry_diagnostics
 
@@ -125,3 +128,23 @@ async def test_diagnostics_redact_login(hass: HomeAssistant, mock_status: AsyncM
     assert diag["entry"]["username"] == "**REDACTED**"
     assert diag["status"]["dsl"]["status"] == "Showtime"
     assert diag["status"]["system"]["mac"] == "**REDACTED**"
+
+
+async def test_reboot_failure_is_translated(hass: HomeAssistant, mock_status: AsyncMock, config_entry) -> None:
+    config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    with (
+        patch(
+            "custom_components.draytek_vigor.api.VigorClient.async_reboot",
+            new=AsyncMock(side_effect=CannotConnect("reboot not accepted (rid 2033)")),
+        ),
+        pytest.raises(HomeAssistantError) as err,
+    ):
+        await hass.services.async_call(
+            "button", "press", {"entity_id": "button.draytek_vigor_reboot_modem"}, blocking=True
+        )
+    assert err.value.translation_domain == DOMAIN
+    assert err.value.translation_key == "reboot_failed"
+    assert str(err.value) == "Reboot failed: reboot not accepted (rid 2033)"

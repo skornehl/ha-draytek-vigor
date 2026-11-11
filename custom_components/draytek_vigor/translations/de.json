@@ -3,13 +3,20 @@
     "step": {
       "user": {
         "title": "DrayTek Vigor",
-        "description": "Web-Zugang des Modems. HTTPS verwenden, außer die Verwaltung per HTTPS ist am Modem aus; das Zertifikat ist selbstsigniert, die Prüfung also aus lassen.",
+        "description": "Web-Zugang des Modems.",
         "data": {
           "host": "Host",
           "ssl": "HTTPS verwenden",
           "verify_ssl": "Zertifikat prüfen",
           "username": "Benutzername",
           "password": "Passwort"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Modems, z. B. 192.168.1.1.",
+          "ssl": "Per HTTPS mit dem Modem sprechen. Nur ausschalten, wenn die Verwaltung per HTTPS am Modem aus ist.",
+          "verify_ssl": "Aus lassen: Das Zertifikat des Modems ist selbstsigniert und würde abgelehnt.",
+          "username": "Web-Benutzer des Modems, meist admin. Der Neustart-Button braucht einen Benutzer, der neu starten darf.",
+          "password": "Passwort dieses Web-Benutzers."
         }
       },
       "reauth_confirm": {
@@ -18,6 +25,10 @@
         "data": {
           "username": "Benutzername",
           "password": "Passwort"
+        },
+        "data_description": {
+          "username": "Web-Benutzer des Modems, meist admin.",
+          "password": "Aktuelles Passwort dieses Web-Benutzers."
         }
       },
       "reconfigure": {
@@ -27,6 +38,11 @@
           "host": "Host",
           "ssl": "HTTPS verwenden",
           "verify_ssl": "Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Modems, z. B. 192.168.1.1.",
+          "ssl": "Per HTTPS mit dem Modem sprechen. Nur ausschalten, wenn die Verwaltung per HTTPS am Modem aus ist.",
+          "verify_ssl": "Aus lassen: Das Zertifikat des Modems ist selbstsigniert und würde abgelehnt."
         }
       }
     },
@@ -175,6 +191,11 @@
           "1g": "1 Gbit/s"
         }
       }
+    }
+  },
+  "exceptions": {
+    "reboot_failed": {
+      "message": "Neustart fehlgeschlagen: {error}"
     }
   }
 }
