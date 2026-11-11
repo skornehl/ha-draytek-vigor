@@ -11,8 +11,9 @@ Home Assistant custom integration (HACS) for the DrayTek Vigor 167 DSL modem.
   must not import Home Assistant or aiohttp, so `tests/test_protocol.py` runs
   without them. Every parser change needs a test.
 - `tests/ha/` runs the config flow, setup and coordinator inside Home
-  Assistant and needs `pytest-homeassistant-custom-component` (version pinned
-  in `.github/workflows/validate.yml`). The login rejection count lives in
+  Assistant and needs `pytest-homeassistant-custom-component`. CI runs it
+  against the oldest supported Home Assistant (the minimum in `hacs.json`) and
+  a current one; keep both in `.github/workflows/validate.yml` up to date. The login rejection count lives in
   `hass.data`, not on the coordinator: setup retries build a new coordinator.
 - DSL field names come from SuperQ/draytek_exporter (see NOTICE) and match
   real Vigor 167 responses: `tests/fixtures/dsl_status_idle_fw5.json` (no line)

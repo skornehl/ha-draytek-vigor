@@ -58,6 +58,8 @@ source: it sees the same traffic, and its own integration reports it.
 
 ## Requirements
 
+- Home Assistant 2025.6 or later. The integration's icon shows from 2026.3 on;
+  older versions show a placeholder.
 - Web management reachable from Home Assistant, over HTTPS (default) or HTTP.
   The modem's certificate is self-signed, so certificate verification is off
   by default.
@@ -238,8 +240,9 @@ English in code and docs.
 - `custom_components/draytek_vigor/protocol.py` holds the encoding and the
   parsers and imports neither Home Assistant nor aiohttp, so
   `tests/test_protocol.py` runs with plain `pytest`.
-- The whole suite needs `pytest-homeassistant-custom-component` in the
-  version pinned in `.github/workflows/validate.yml`, then `pytest -q tests`.
+- The whole suite needs `pytest-homeassistant-custom-component` in one of
+  the versions in `.github/workflows/validate.yml` (oldest supported and a
+  current Home Assistant), then `pytest -q tests`.
 - Every parser change needs a test with a real, redacted response in
   `tests/fixtures/` (MAC addresses replaced, `td` zeroed).
 - When touching the reboot, keep `Reboot_With: Current Configuration`: the
