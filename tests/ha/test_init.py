@@ -1,6 +1,7 @@
 """Setup, entities, reauth after repeated login rejections, diagnostics."""
 from __future__ import annotations
 
+import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -11,7 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from custom_components.draytek_vigor.api import CannotConnect, InvalidAuth
+from custom_components.draytek_vigor.api import CannotConnect, InvalidAuth, VigorClient
 from custom_components.draytek_vigor.const import DOMAIN, LOGIN_REJECTIONS_BEFORE_REAUTH
 from custom_components.draytek_vigor.diagnostics import async_get_config_entry_diagnostics
 
@@ -148,3 +149,38 @@ async def test_reboot_failure_is_translated(hass: HomeAssistant, mock_status: As
     assert err.value.translation_domain == DOMAIN
     assert err.value.translation_key == "reboot_failed"
     assert str(err.value) == "Reboot failed: reboot not accepted (rid 2033)"
+
+
+async def _logout_after_connect(client: VigorClient, seen: list[bool]) -> None:
+    # A real request suspends while connecting; HA detaches the session in the
+    # meantime if nobody awaits the logout (aiohttp then fails with
+    # AttributeError '_timeout_ceil_threshold' and "Unclosed connection").
+    await asyncio.sleep(0)
+    seen.append(client._session.closed)
+
+
+async def test_unload_logs_out_before_the_session_is_detached(
+    hass: HomeAssistant, mock_status: AsyncMock, config_entry
+) -> None:
+    config_entry.add_to_hass(hass)
+    seen: list[bool] = []
+    with patch.object(VigorClient, "async_logout", lambda self: _logout_after_connect(self, seen)):
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+        assert await hass.config_entries.async_unload(config_entry.entry_id)
+        await hass.async_block_till_done()
+    assert seen == [False]
+
+
+async def test_failed_setup_logs_out_before_the_session_is_detached(
+    hass: HomeAssistant, mock_status: AsyncMock, config_entry
+) -> None:
+    mock_status.side_effect = CannotConnect("timeout")
+    config_entry.add_to_hass(hass)
+
+    seen: list[bool] = []
+    with patch.object(VigorClient, "async_logout", lambda self: _logout_after_connect(self, seen)):
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+    assert config_entry.state is ConfigEntryState.SETUP_RETRY
+    assert seen == [False]

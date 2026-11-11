@@ -54,8 +54,12 @@ def normalize_host(host: str) -> str:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> bool:
+    # The logout is awaited here and in async_unload_entry, never registered
+    # with async_on_unload: HA only starts on_unload coroutines as tasks and
+    # detaches the session right after, so the logout request died half-way
+    # (AttributeError '_timeout_ceil_threshold', "Unclosed connection") and
+    # the web session stayed open on the modem.
     client = create_client(hass, entry.data)
-    entry.async_on_unload(client.async_logout)
 
     async def _logout_on_stop(_event: Event) -> None:
         # Entries are not unloaded on shutdown; log out so restarts do not
@@ -64,11 +68,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> boo
 
     entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _logout_on_stop))
     coordinator = VigorCoordinator(hass, entry, client)
-    await coordinator.async_config_entry_first_refresh()
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except Exception:
+        # Not ready or reauth: the setup is retried with a new client.
+        await client.async_logout()
+        raise
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> bool:
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        await entry.runtime_data.client.async_logout()
+    return unloaded
