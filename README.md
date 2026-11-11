@@ -12,10 +12,11 @@ counters, plus uptime, DSL connection time, LAN port links, CPU and memory,
 and a button to reboot the modem. Set up in the UI with host, user and
 password over HTTPS; no SNMP, no YAML, no OID lists.
 
-> **Status: 0.3.0.** Built against a Vigor 167 (firmware 5.2.9, DSL firmware
-> 5.12.31.0): login, logout and reboot were tested with the integration, and
-> the DSL status and dashboard of a synced VDSL2 17a line are captured in
-> `tests/fixtures/`. The protocol follows
+> **Status: 0.3.3.** Running on Home Assistant 2026.10 with a Vigor 167
+> (firmware 5.2.9, DSL firmware 5.12.31.0) on a synced VDSL2 17a line, over
+> HTTPS: all entities and reloading are checked there, login, logout and the
+> reboot earlier on the same modem. The DSL status and dashboard responses are
+> captured in `tests/fixtures/`. The protocol follows
 > [SuperQ/draytek_exporter](https://github.com/SuperQ/draytek_exporter). If a
 > value stays empty on your modem, please open an issue with the diagnostics
 > attached.
@@ -71,6 +72,8 @@ HACS → ⋮ → *Custom repositories* → `https://github.com/skornehl/ha-drayt
 
 Entries set up before 0.3.0 keep using HTTP. Switch them with
 *DrayTek Vigor → ⋮ → Reconfigure*; the entities and their history stay.
+Rate sensors from before 0.3.0 move from kbit/s to Mbit/s with 0.3.3 (history
+is converted), unless you picked a unit for them in the entity settings.
 
 ## Entities
 
@@ -85,7 +88,7 @@ Entries set up before 0.3.0 keep using HTTP. Switch them with
 | Attenuation near/far end | dB |
 | DSL connected since | Timestamp of the last sync; empty while the line is down |
 | LAN1 link, LAN2 link (binary) | Connectivity of each LAN port |
-| LAN1 speed, LAN2 speed | Diagnostic: down, 10/100 Mbit/s or 1 Gbit/s, from the port LED colour |
+| LAN1 speed, LAN2 speed | Diagnostic: *Down*, *10/100 Mbit/s* or *1 Gbit/s*, from the port LED colour. The state behind it, for automations and the API, is `down`, `10_100m` or `1g`; the LED does not tell 10 from 100 Mbit/s |
 | Last restart | Diagnostic timestamp of the modem's boot |
 | CPU usage, memory usage | Diagnostic, percent |
 | Interleave depth down/up | Diagnostic, disabled by default; 1 means fast path |
@@ -120,6 +123,11 @@ automation:
 
 *DSL connected since* changing is a resync, even when it happened between two
 polls.
+
+The entity IDs here are the English ones. Home Assistant derives them from the
+names in the language active at setup, so on a German installation the sync
+sensor is `binary_sensor.draytek_vigor_dsl_synchronisation`; check yours under
+*Settings → Devices & services → DrayTek Vigor*.
 
 ## Diagnostics
 
