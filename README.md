@@ -167,3 +167,6 @@ never triggers a new login. Reboot is `pid=0REBOOT`: read the form
 The web API protocol follows
 [SuperQ/draytek_exporter](https://github.com/SuperQ/draytek_exporter) by Ben
 Kochie (Apache-2.0); see [NOTICE](NOTICE). No code was copied.
+
+This integration was built with the help of
+[Claude Code](https://claude.com/claude-code) by Anthropic.
