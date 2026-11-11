@@ -32,18 +32,21 @@ jobs:
       matrix:
         include:
           # Oldest supported version, as in hacs.json and the README badge.
+          # pycares 5 breaks the aiodns it pins.
           - ha: "2025.6.0"
             phcc: "0.13.251"
             python: "3.13"
+            pins: "'pycares<5'"
           # Newest pytest-homeassistant-custom-component release when this was set.
           - ha: "2026.10.4"
             phcc: "0.13.375"
             python: "3.14"
+            pins: ""
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       # Each pytest-homeassistant-custom-component release pins one Home Assistant version.
-      - run: pip install pytest-homeassistant-custom-component==${{ matrix.phcc }}
+      - run: pip install "pytest-homeassistant-custom-component==${{ matrix.phcc }}" ${{ matrix.pins }}
       - run: pytest -q tests

@@ -58,7 +58,10 @@ async def test_dashboard_entities(hass: HomeAssistant, mock_status: AsyncMock, c
     assert hass.states.get("sensor.draytek_vigor_lan1_speed").state == "1g"
     assert hass.states.get("sensor.draytek_vigor_lan2_speed").state == "down"
 
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, config_entry.entry_id)})
+    # async_get_device is deprecated from 2026.10 on; this lookup works on all
+    # supported versions.
+    [device] = dr.async_entries_for_config_entry(dr.async_get(hass), config_entry.entry_id)
+    assert (DOMAIN, config_entry.entry_id) in device.identifiers
     assert (device.model, device.sw_version) == ("Vigor167", "5.2.9")
     assert (dr.CONNECTION_NETWORK_MAC, "00:1d:aa:00:00:01") in device.connections
     assert device.configuration_url == "https://192.168.1.2"
