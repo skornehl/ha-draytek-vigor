@@ -11,10 +11,10 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.draytek_vigor.const import DOMAIN
-from custom_components.draytek_vigor.protocol import DslStatus
+from custom_components.draytek_vigor.protocol import PORT_1G, PORT_DOWN, DslStatus, SystemStatus
 
 HOST = "192.168.1.2"
-ENTRY_DATA = {"host": HOST, "username": "admin", "password": "secret"}
+ENTRY_DATA = {"host": HOST, "ssl": True, "verify_ssl": False, "username": "admin", "password": "secret"}
 
 
 @pytest.fixture(autouse=True)
@@ -24,29 +24,56 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 def synced_status() -> DslStatus:
     return DslStatus(
-        status="SHOWTIME",
+        status="Showtime",
         mode="VDSL2",
-        profile="17A",
-        annex="B",
-        dsl_version="5.12.31.0_A_A60901",
+        profile="17a",
+        annex="ANNEX B",
+        dsl_version="5.12.31.0_B_A60901",
         stream={
-            "Actual Rate": (116797, 46719),
-            "Attainable Rate": (131000, 50112),
-            "SNR Margin": (9.3, 8),
-            "Interleave Depth": (1, 1),
+            "Actual Rate": (113742, 46719),
+            "Attainable Rate": (124643, 48103),
+            "SNR Margin": (2.9, 7.3),
+            "Interleave Depth": (8, 1),
         },
-        end={"Attenuation": (12.5, 0), "CRC": (17, 3), "RFEC": (1024, 88)},
+        end={"Attenuation": (11.3, 2.1), "CRC": (175, 0), "LOS Failure": (0, 0)},
+    )
+
+
+def system_status() -> SystemStatus:
+    return SystemStatus(
+        model="Vigor167",
+        firmware="5.2.9",
+        mac="00:1D:AA:00:00:01",
+        uptime=1005454,
+        line_uptime=1005303,
+        cpu=3,
+        memory=90,
+        ports={"LAN1": PORT_1G, "LAN2": PORT_DOWN},
     )
 
 
 @pytest.fixture
-def mock_status() -> Generator[AsyncMock]:
-    """Patch the modem call used by the config flow and the coordinator."""
-    with patch(
-        "custom_components.draytek_vigor.api.VigorClient.async_get_dsl_status",
-        new=AsyncMock(return_value=synced_status()),
-    ) as mock:
-        yield mock
+def dashboard() -> dict[str, SystemStatus | None]:
+    """What the coordinator's dashboard request returns; set ["system"] = None for none."""
+    return {"system": system_status()}
+
+
+@pytest.fixture
+def mock_status(dashboard) -> Generator[AsyncMock]:
+    """Patch the modem calls of the config flow (DSL only) and the coordinator (DSL + dashboard).
+
+    One mock drives both, so side_effect = InvalidAuth hits the coordinator too.
+    """
+    dsl = AsyncMock(return_value=synced_status())
+
+    async def get_status(_client) -> tuple[DslStatus, SystemStatus | None]:
+        return await dsl(), dashboard["system"]
+
+    with (
+        patch("custom_components.draytek_vigor.api.VigorClient.async_get_dsl_status", new=dsl),
+        patch("custom_components.draytek_vigor.api.VigorClient.async_get_status", new=get_status),
+    ):
+        yield dsl
 
 
 @pytest.fixture

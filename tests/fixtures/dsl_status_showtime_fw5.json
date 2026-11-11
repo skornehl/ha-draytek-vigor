@@ -1,0 +1,166 @@
+{
+ "rid": "0000",
+ "total": 1,
+ "start": 0,
+ "ct": [
+  {
+   "0MONITORING_DSL_GENERAL": [
+    {
+     "Name": "Setting",
+     "ATU_R_Information": "",
+     "Broadcast_DSL_Status_to_LAN": [
+      true
+     ],
+     "Note": "",
+     "Status": "Showtime",
+     "Mode": "VDSL2",
+     "Profile": "17a",
+     "Annex": "ANNEX B",
+     "DSL_Version": "5.12.31.0_B_A60901",
+     "Power_Management_Mode": "--",
+     "ATU_R_Vendor_ID": "fe004452 41590000",
+     "ATU_C_Information": "",
+     "ATU_C_Vendor_ID": "b5004244 434dd086",
+     "Line_Statistics": "",
+     "Stream_Table": [
+      {
+       "Name": "Actual Rate",
+       "Downstream": "113742 kbps",
+       "Upstream": "46719 kbps"
+      },
+      {
+       "Name": "Attainable Rate",
+       "Downstream": "124643 Kbps",
+       "Upstream": "48103 Kbps"
+      },
+      {
+       "Name": "Path Mode",
+       "Downstream": "Interleaved",
+       "Upstream": "Fast"
+      },
+      {
+       "Name": "Interleave Depth",
+       "Downstream": "8",
+       "Upstream": "1"
+      },
+      {
+       "Name": "Actual PSD",
+       "Downstream": "0 dB",
+       "Upstream": "0 dB"
+      },
+      {
+       "Name": "SNR Margin",
+       "Downstream": "2.9 dB",
+       "Upstream": "7.3 dB"
+      }
+     ],
+     "End_Table": [
+      {
+       "Name": "Trellis",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "Bitswap",
+       "Near_End": "ON",
+       "Far_End": "ON"
+      },
+      {
+       "Name": "ReTx",
+       "Near_End": "ON",
+       "Far_End": "ON"
+      },
+      {
+       "Name": "Attenuation",
+       "Near_End": "11.3 dB",
+       "Far_End": "2.1 dB"
+      },
+      {
+       "Name": "CRC",
+       "Near_End": "175",
+       "Far_End": "0"
+      },
+      {
+       "Name": "FECS",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "ES",
+       "Near_End": "20 s",
+       "Far_End": "0 s"
+      },
+      {
+       "Name": "SES",
+       "Near_End": "0 s",
+       "Far_End": "0 s"
+      },
+      {
+       "Name": "LOSS",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "UAS",
+       "Near_End": "127 s",
+       "Far_End": "127 s"
+      },
+      {
+       "Name": "HEC Errors",
+       "Near_End": "0",
+       "Far_End": "0"
+      },
+      {
+       "Name": "RS Corrections",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "LOS Failure",
+       "Near_End": "0",
+       "Far_End": "0"
+      },
+      {
+       "Name": "LOF Failure",
+       "Near_End": "0",
+       "Far_End": "0"
+      },
+      {
+       "Name": "LPR Failure",
+       "Near_End": "0",
+       "Far_End": "0"
+      },
+      {
+       "Name": "NCD Failure",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "LCD Failure",
+       "Near_End": "0",
+       "Far_End": "0"
+      },
+      {
+       "Name": "NFEC",
+       "Near_End": "-",
+       "Far_End": "-"
+      },
+      {
+       "Name": "RFEC",
+       "Near_End": "10",
+       "Far_End": "8"
+      },
+      {
+       "Name": "LYSMB",
+       "Near_End": "-",
+       "Far_End": "-"
+      }
+     ]
+    }
+   ],
+   "1MON_DSL_STREAM_TABLE": [],
+   "1MON_DSL_END_TABLE": []
+  }
+ ],
+ "td": "00000000000000000000000000000000"
+}

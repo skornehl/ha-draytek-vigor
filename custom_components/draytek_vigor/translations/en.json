@@ -3,9 +3,11 @@
     "step": {
       "user": {
         "title": "DrayTek Vigor",
-        "description": "Web login of the modem. HTTP management must be enabled and \"Force HTTPS\" off.",
+        "description": "Web login of the modem. Use HTTPS unless HTTPS management is off on the modem; its certificate is self-signed, so leave certificate verification off.",
         "data": {
           "host": "Host",
+          "ssl": "Use HTTPS",
+          "verify_ssl": "Verify the certificate",
           "username": "Username",
           "password": "Password"
         }
@@ -17,22 +19,35 @@
           "username": "Username",
           "password": "Password"
         }
+      },
+      "reconfigure": {
+        "title": "DrayTek Vigor",
+        "description": "Change the address or HTTPS. Username and password stay as they are.",
+        "data": {
+          "host": "Host",
+          "ssl": "Use HTTPS",
+          "verify_ssl": "Verify the certificate"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Cannot reach the modem's web API (is \"Force HTTPS\" on?)",
+      "cannot_connect": "Cannot reach the modem's web API (wrong address, or HTTP/HTTPS switched off?)",
       "invalid_auth": "Username or password wrong",
       "unknown": "Unexpected error, see the log"
     },
     "abort": {
       "already_configured": "This modem is already set up",
-      "reauth_successful": "Login updated"
+      "reauth_successful": "Login updated",
+      "reconfigure_successful": "Connection updated"
     }
   },
   "entity": {
     "binary_sensor": {
       "dsl_sync": {
         "name": "DSL sync"
+      },
+      "lan_link": {
+        "name": "{port} link"
       }
     },
     "button": {
@@ -110,12 +125,6 @@
       "uas_far": {
         "name": "UAS far end"
       },
-      "fec_near": {
-        "name": "FEC corrections near end"
-      },
-      "fec_far": {
-        "name": "FEC corrections far end"
-      },
       "hec_near": {
         "name": "HEC errors near end"
       },
@@ -145,6 +154,26 @@
       },
       "lcd_far": {
         "name": "Loss of cell delineation far end"
+      },
+      "line_up_since": {
+        "name": "DSL connected since"
+      },
+      "last_restart": {
+        "name": "Last restart"
+      },
+      "cpu_usage": {
+        "name": "CPU usage"
+      },
+      "memory_usage": {
+        "name": "Memory usage"
+      },
+      "lan_speed": {
+        "name": "{port} speed",
+        "state": {
+          "down": "Down",
+          "10_100m": "10/100 Mbit/s",
+          "1g": "1 Gbit/s"
+        }
       }
     }
   }

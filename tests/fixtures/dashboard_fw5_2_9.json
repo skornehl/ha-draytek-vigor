@@ -1,0 +1,187 @@
+{
+ "rid": "0000",
+ "total": 1,
+ "start": 0,
+ "ct": [
+  {
+   "0DASHBOARD": [
+    {
+     "Name": "dashboard",
+     "Board": [
+      {
+       "Name": "NamePlate",
+       "Title": "PORT STATUS",
+       "Enable": [
+        true
+       ],
+       "PID": "2NAMEPLATE",
+       "Style": "fillform",
+       "ROW": 0,
+       "Disclosure": [
+        false
+       ],
+       "RefreshTime": 10
+      },
+      {
+       "Name": "LAN_Usage",
+       "Title": "LAN USAGE",
+       "Enable": [
+        true
+       ],
+       "PID": "1ETH_LAN_USAGE",
+       "Style": "generic",
+       "ROW": 0,
+       "Disclosure": [
+        true
+       ],
+       "RefreshTime": 10
+      },
+      {
+       "Name": "System_Information",
+       "Title": "SYSTEM",
+       "Enable": [
+        true
+       ],
+       "PID": "1SYSTEM_INFO",
+       "Style": "fillform",
+       "ROW": 1,
+       "Disclosure": [
+        true
+       ],
+       "RefreshTime": 10
+      },
+      {
+       "Name": "DSL_Information",
+       "Title": "DSL INFORMATION",
+       "Enable": [
+        true
+       ],
+       "PID": "1DSL_STS_INFO_LITE",
+       "Style": "fillform",
+       "ROW": 1,
+       "Disclosure": [
+        true
+       ],
+       "RefreshTime": 10
+      },
+      {
+       "Name": "System_Usage",
+       "Title": "SYSTEM USAGE",
+       "Enable": [
+        true
+       ],
+       "PID": "1SYSTEM_USAGE",
+       "Style": "fillform",
+       "ROW": 1,
+       "Disclosure": [
+        true
+       ],
+       "RefreshTime": 10
+      }
+     ]
+    }
+   ],
+   "2NAMEPLATE": [
+    {
+     "Name": "NamePlate",
+     "Model": "Vigor167",
+     "LEDs": [
+      {
+       "Name": "DSL",
+       "Action": "1"
+      },
+      {
+       "Name": "LAN1",
+       "Action": "1"
+      },
+      {
+       "Name": "LAN2",
+       "Action": "1"
+      }
+     ]
+    }
+   ],
+   "1ETH_LAN_USAGE": [
+    {
+     "Name": "[LAN] LAN1",
+     "Interface": "br0",
+     "ifno_enable": "1",
+     "dev_type": "Ethernet",
+     "mode": "Static",
+     "ipaddr": [
+      "192.168.1.3"
+     ],
+     "mask": "255.255.255.0",
+     "gateway": "0.0.0.0",
+     "mac_address": "00:1D:AA:00:00:01",
+     "physical": "",
+     "Interface_ID": "0",
+     "Uptime": "00:00:00",
+     "TX_Packets": 318576,
+     "RX_Packets": 39712668,
+     "TX_Bytes": 174622844,
+     "RX_Bytes": 7509915626,
+     "TX_Rate": 0,
+     "RX_Rate": 0,
+     "stat_tx": [],
+     "stat_rx": [],
+     "DHCP": "",
+     "Primary_DNS": "",
+     "Secondary_DNS": "",
+     "Status": "online",
+     "LANEthernetInterfaceConfig_Status": "Up",
+     "IPv6_Interface": "br0",
+     "IPv6_Assignment": ""
+    }
+   ],
+   "1SYSTEM_INFO": [
+    {
+     "Name": "System Information",
+     "Device_Name": "DrayTek",
+     "LAN_MAC": "00:1D:AA:00:00:01",
+     "System_Uptime": 1005454,
+     "Serial_Number": "",
+     "Firmware": "5.2.9",
+     "Build_DateTime": "Fri Jul  3 17:05:00 CST 2026",
+     "Web_Version": "r4441.ceb53c56",
+     "Core_Version": "r603",
+     "ACS_Server": " [LED_OFF]",
+     "See_More": [
+      false
+     ]
+    }
+   ],
+   "1DSL_STS_INFO_LITE": [
+    {
+     "Name": "1",
+     "Status": "Showtime",
+     "Mode": "VDSL2",
+     "Profile": "17a",
+     "Annex": "ANNEX B",
+     "DSL_Version": "5.12.31.0_B_A60901",
+     "Line_Uptime": "11d 15h 15m  3s",
+     "Downstream_Line_Rate": "113742 kbps",
+     "Upstream_Line_Rate": "46719 kbps",
+     "SNR_Downstream": "2.9 dB",
+     "SNR_Upstream": "7.3 dB",
+     "Downstream_Line_Attenuation": "11.3 dB"
+    }
+   ],
+   "1SYSTEM_USAGE": [
+    {
+     "Name": "0",
+     "CPU": "CPU Usage",
+     "CPU_Utilization": 0,
+     "MEMORY": "Memory Usage",
+     "MEMORY_Utilization": 90,
+     "ForTR181": [
+      false
+     ],
+     "MemoryStatus_Total": 105896,
+     "MemoryStatus_Free": 9760
+    }
+   ]
+  }
+ ],
+ "td": "00000000000000000000000000000000"
+}

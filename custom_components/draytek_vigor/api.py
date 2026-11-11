@@ -10,6 +10,9 @@ import aiohttp
 
 from .protocol import (
     CSRF_HEADER,
+    DASHBOARD_OP,
+    DASHBOARD_PID,
+    DASHBOARD_QUERY,
     DSL_OP,
     DSL_PID,
     DSL_QUERY,
@@ -24,12 +27,14 @@ from .protocol import (
     REBOOT_READ_OP,
     DslStatus,
     ProtocolError,
+    SystemStatus,
     decode,
     encode,
     is_ok,
     is_reboot_accepted,
     login_payload,
     logout_payload,
+    parse_dashboard,
     parse_dsl_status,
     parse_reboot_record,
     reboot_payload,
@@ -65,9 +70,11 @@ class VigorClient:
     set by plain IP hosts otherwise, and the login would never stick.
     """
 
-    def __init__(self, session: aiohttp.ClientSession, host: str, username: str, password: str) -> None:
+    def __init__(
+        self, session: aiohttp.ClientSession, host: str, username: str, password: str, use_https: bool = False
+    ) -> None:
         self._session = session
-        self._url = f"http://{host}{PATH}"
+        self._url = f"{'https' if use_https else 'http'}://{host}{PATH}"
         self._username = username
         self._password = password
         self._csrf = ""
@@ -152,6 +159,24 @@ class VigorClient:
     async def async_get_dsl_status(self) -> DslStatus:
         async with self._lock:
             return await self._request_unlocked(DSL_PID, DSL_OP, DSL_QUERY, parse_dsl_status)
+
+    async def async_get_status(self) -> tuple[DslStatus, SystemStatus | None]:
+        """DSL status, then the dashboard on the same session.
+
+        The dashboard is best effort: a firmware without it (or a hiccup) must
+        not take the line values down, and its failure must not trigger a
+        re-login on every poll, so it gets one plain request and None on error.
+        """
+        async with self._lock:
+            dsl = await self._request_unlocked(DSL_PID, DSL_OP, DSL_QUERY, parse_dsl_status)
+            try:
+                data = await self._post(DASHBOARD_PID, DASHBOARD_OP, DASHBOARD_QUERY)
+                if is_ok(data):
+                    return dsl, parse_dashboard(data)
+                _LOGGER.debug("Dashboard answered rid %s", data.get("rid"))
+            except (CannotConnect, ProtocolError) as err:
+                _LOGGER.debug("Dashboard failed: %s", err)
+            return dsl, None
 
     async def async_reboot(self) -> None:
         """Reboot the modem with its current configuration (about 70 s offline).
