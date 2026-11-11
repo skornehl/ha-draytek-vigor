@@ -184,3 +184,56 @@ async def test_failed_setup_logs_out_before_the_session_is_detached(
         await hass.async_block_till_done()
     assert config_entry.state is ConfigEntryState.SETUP_RETRY
     assert seen == [False]
+
+
+def _old_rate_entity(hass: HomeAssistant, config_entry, options: dict | None) -> str:
+    """A rate sensor as an older version left it in the entity registry."""
+    registry = er.async_get(hass)
+    entity = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        f"{config_entry.entry_id}_rate_down",
+        config_entry=config_entry,
+        suggested_object_id="draytek_vigor_sync_rate_downstream",
+        unit_of_measurement="kbit/s",
+    )
+    for domain, values in (options or {}).items():
+        registry.async_update_entity_options(entity.entity_id, domain, values)
+    return entity.entity_id
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        None,  # straight from 0.2.x
+        {"sensor.private": {"suggested_unit_of_measurement": "kbit/s"}},  # after 0.3.0-0.3.2
+    ],
+)
+async def test_old_rate_sensors_move_to_mbit(hass: HomeAssistant, mock_status: AsyncMock, config_entry, options) -> None:
+    config_entry.add_to_hass(hass)
+    entity_id = _old_rate_entity(hass, config_entry, options)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    state = hass.states.get(entity_id)
+    assert state.attributes["unit_of_measurement"] == "Mbit/s"
+    assert float(state.state) == 113.742
+
+    # A second start changes nothing.
+    await hass.config_entries.async_reload(config_entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get(entity_id).attributes["unit_of_measurement"] == "Mbit/s"
+
+
+async def test_unit_chosen_by_the_user_stays(hass: HomeAssistant, mock_status: AsyncMock, config_entry) -> None:
+    config_entry.add_to_hass(hass)
+    entity_id = _old_rate_entity(
+        hass,
+        config_entry,
+        {"sensor": {"unit_of_measurement": "kbit/s"}, "sensor.private": {"suggested_unit_of_measurement": "kbit/s"}},
+    )
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+    state = hass.states.get(entity_id)
+    assert state.attributes["unit_of_measurement"] == "kbit/s"
+    assert state.state == "113742"

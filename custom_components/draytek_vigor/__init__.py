@@ -12,13 +12,46 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     Platform,
 )
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import VigorClient
+from .const import DOMAIN
 from .coordinator import VigorConfigEntry, VigorCoordinator
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.BUTTON, Platform.SENSOR]
+RATE_KEYS = ("rate_down", "rate_up", "attainable_down", "attainable_up")
+KBIT = "kbit/s"
+
+
+@callback
+def _rates_to_suggested_unit(hass: HomeAssistant, entry: VigorConfigEntry) -> None:
+    """Show rate sensors from before 0.3.0 in Mbit/s, like new ones.
+
+    When 0.3.0 added Mbit/s as suggested unit, Home Assistant kept kbit/s for
+    existing entities by storing it as their suggested unit. Ask it once to
+    recompute that from the integration; a unit the user picked in the entity
+    settings ("sensor" options) is left alone. History is converted by HA.
+    """
+    registry = er.async_get(hass)
+    for key in RATE_KEYS:
+        entity_id = registry.async_get_entity_id(Platform.SENSOR, DOMAIN, f"{entry.entry_id}_{key}")
+        if entity_id is None or (reg := registry.async_get(entity_id)) is None:
+            continue
+        if "unit_of_measurement" in reg.options.get("sensor", {}):
+            continue
+        # Upgraded to 0.3.x: kbit/s stored as suggested unit. Coming straight
+        # from 0.2.x: no sensor.private yet, kbit/s only as registry unit.
+        if "sensor.private" in reg.options:
+            current = reg.options["sensor.private"].get("suggested_unit_of_measurement")
+        else:
+            current = reg.unit_of_measurement
+        if current != KBIT:
+            continue
+        registry.async_update_entity_options(
+            entity_id, "sensor.private", {"refresh_initial_entity_options": True}
+        )
 
 
 def create_client(hass: HomeAssistant, data: dict, auto_cleanup: bool = True) -> VigorClient:
@@ -75,6 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: VigorConfigEntry) -> boo
         await client.async_logout()
         raise
     entry.runtime_data = coordinator
+    _rates_to_suggested_unit(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
