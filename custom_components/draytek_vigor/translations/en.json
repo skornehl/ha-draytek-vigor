@@ -3,13 +3,20 @@
     "step": {
       "user": {
         "title": "DrayTek Vigor",
-        "description": "Web login of the modem. Use HTTPS unless HTTPS management is off on the modem; its certificate is self-signed, so leave certificate verification off.",
+        "description": "Web login of the modem.",
         "data": {
           "host": "Host",
           "ssl": "Use HTTPS",
           "verify_ssl": "Verify the certificate",
           "username": "Username",
           "password": "Password"
+        },
+        "data_description": {
+          "host": "IP address or host name of the modem, e.g. 192.168.1.1.",
+          "ssl": "Talk to the modem over HTTPS. Turn off only if HTTPS management is disabled on the modem.",
+          "verify_ssl": "Leave off: the modem's own certificate is self-signed and would be rejected.",
+          "username": "Web user of the modem, usually admin. The reboot button needs a user that may reboot.",
+          "password": "Password of that web user."
         }
       },
       "reauth_confirm": {
@@ -18,6 +25,10 @@
         "data": {
           "username": "Username",
           "password": "Password"
+        },
+        "data_description": {
+          "username": "Web user of the modem, usually admin.",
+          "password": "Current password of that web user."
         }
       },
       "reconfigure": {
@@ -27,6 +38,11 @@
           "host": "Host",
           "ssl": "Use HTTPS",
           "verify_ssl": "Verify the certificate"
+        },
+        "data_description": {
+          "host": "IP address or host name of the modem, e.g. 192.168.1.1.",
+          "ssl": "Talk to the modem over HTTPS. Turn off only if HTTPS management is disabled on the modem.",
+          "verify_ssl": "Leave off: the modem's own certificate is self-signed and would be rejected."
         }
       }
     },
@@ -175,6 +191,11 @@
           "1g": "1 Gbit/s"
         }
       }
+    }
+  },
+  "exceptions": {
+    "reboot_failed": {
+      "message": "Reboot failed: {error}"
     }
   }
 }
