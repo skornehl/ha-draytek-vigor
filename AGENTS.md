@@ -30,6 +30,9 @@ Home Assistant custom integration (HACS) for the DrayTek Vigor 167 DSL modem.
   verification is off; entries without `ssl` in their data use HTTP.
 - The aiohttp session needs `CookieJar(unsafe=True)`: the modem is addressed by
   IP and aiohttp drops cookies from IP hosts otherwise.
+- Await the logout in `async_unload_entry` (and on a failed first refresh);
+  never hand it to `entry.async_on_unload`: HA only starts that coroutine and
+  detaches the session right after, so the request dies half-way.
 - `strings.json`, `translations/en.json` and `translations/de.json` stay
   key-identical; `en.json` is a copy of `strings.json`.
 - Writes need the CSRF token from the `x-csrf-token` response header (sent
