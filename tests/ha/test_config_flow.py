@@ -99,6 +99,12 @@ async def test_reconfigure_switches_to_https(hass: HomeAssistant, mock_status: A
     assert entry.title == "Vigor 192.168.1.3"
     assert entry.data == {"host": "192.168.1.3", "ssl": True, "verify_ssl": False, "username": "admin", "password": "secret"}
 
+    # Home Assistant 2025.6 also loads the entry on reconfigure; unload it so
+    # no poll timer outlives the test.
+    await hass.async_block_till_done()
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
 
 async def test_reconfigure_rejects_other_entrys_host(hass: HomeAssistant, mock_status: AsyncMock, config_entry) -> None:
     config_entry.add_to_hass(hass)

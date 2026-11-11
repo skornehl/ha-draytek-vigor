@@ -12,7 +12,7 @@ counters, plus uptime, DSL connection time, LAN port links, CPU and memory,
 and a button to reboot the modem. Set up in the UI with host, user and
 password over HTTPS; no SNMP, no YAML, no OID lists.
 
-> **Status: 0.3.4.** Running on Home Assistant 2026.10 with a Vigor 167
+> **Status: 1.0.0.** Running on Home Assistant 2026.10 with a Vigor 167
 > (firmware 5.2.9, DSL firmware 5.12.31.0) on a synced VDSL2 17a line, over
 > HTTPS: all entities and reloading are checked there, login, logout and the
 > reboot earlier on the same modem. The DSL status and dashboard responses are
