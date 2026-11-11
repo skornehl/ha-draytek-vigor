@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+# tests/ha needs pytest-homeassistant-custom-component (it brings
+# pytest-asyncio); tests/test_protocol.py runs with plain pytest.
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -32,5 +32,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install pytest
+      # Pinned: each release pins one Home Assistant version (0.13.316 = 2026.2.3).
+      - run: pip install pytest-homeassistant-custom-component==0.13.316
       - run: pytest -q tests
