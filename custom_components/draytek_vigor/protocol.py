@@ -161,10 +161,17 @@ def _option(value: Any) -> bool | None:
     return None
 
 
+def _rows(table: Any) -> list[dict[str, Any]]:
+    """The dict rows of a Stream_Table/End_Table; anything else is skipped."""
+    if not isinstance(table, list):
+        return []
+    return [row for row in table if isinstance(row, dict)]
+
+
 def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
     try:
         general = data["ct"][0]["0MONITORING_DSL_GENERAL"]
-        setting = next(e for e in general if e.get("Name") == "Setting")
+        setting = next(e for e in general if isinstance(e, dict) and e.get("Name") == "Setting")
     except (KeyError, IndexError, TypeError, StopIteration) as err:
         raise ProtocolError("no DSL 'Setting' block in response") from err
 
@@ -176,11 +183,11 @@ def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
         dsl_version=setting.get("DSL_Version"),
         raw=setting,
     )
-    for row in setting.get("Stream_Table") or []:
+    for row in _rows(setting.get("Stream_Table")):
         if name := row.get("Name"):
             conv = _kbps if name.endswith("Rate") else _number
             status.stream[name] = (conv(row.get("Downstream")), conv(row.get("Upstream")))
-    for row in setting.get("End_Table") or []:
+    for row in _rows(setting.get("End_Table")):
         if name := row.get("Name"):
             near, far = row.get("Near_End"), row.get("Far_End")
             if name in ("Bitswap", "ReTx"):

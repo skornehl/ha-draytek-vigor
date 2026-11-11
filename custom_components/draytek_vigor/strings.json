@@ -80,6 +80,12 @@
       "attenuation_far": {
         "name": "Attenuation far end"
       },
+      "interleave_down": {
+        "name": "Interleave depth downstream"
+      },
+      "interleave_up": {
+        "name": "Interleave depth upstream"
+      },
       "crc_near": {
         "name": "CRC near end"
       },
@@ -103,6 +109,42 @@
       },
       "uas_far": {
         "name": "UAS far end"
+      },
+      "fec_near": {
+        "name": "FEC corrections near end"
+      },
+      "fec_far": {
+        "name": "FEC corrections far end"
+      },
+      "hec_near": {
+        "name": "HEC errors near end"
+      },
+      "hec_far": {
+        "name": "HEC errors far end"
+      },
+      "los_near": {
+        "name": "Loss of signal near end"
+      },
+      "los_far": {
+        "name": "Loss of signal far end"
+      },
+      "lof_near": {
+        "name": "Loss of frame near end"
+      },
+      "lof_far": {
+        "name": "Loss of frame far end"
+      },
+      "lpr_near": {
+        "name": "Loss of power near end"
+      },
+      "lpr_far": {
+        "name": "Loss of power far end"
+      },
+      "lcd_near": {
+        "name": "Loss of cell delineation near end"
+      },
+      "lcd_far": {
+        "name": "Loss of cell delineation far end"
       }
     }
   }

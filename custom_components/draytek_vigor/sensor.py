@@ -41,6 +41,8 @@ def _rate(key: str, row: str, idx: int, **kw: Any) -> VigorSensorDescription:
         key=key,
         value=_stream(row, idx),
         native_unit_of_measurement=UnitOfDataRate.KILOBITS_PER_SECOND,
+        suggested_unit_of_measurement=UnitOfDataRate.MEGABITS_PER_SECOND,
+        suggested_display_precision=1,
         device_class=SensorDeviceClass.DATA_RATE,
         state_class=SensorStateClass.MEASUREMENT,
         **kw,
@@ -87,8 +89,30 @@ SENSORS: tuple[VigorSensorDescription, ...] = (
     _db("attenuation_near", _end("Attenuation", NEAR)),
     _db("attenuation_far", _end("Attenuation", FAR)),
     *(
-        _counter(f"{name.lower()}_{side}", name, idx, seconds)
-        for name, seconds in (("CRC", False), ("ES", True), ("SES", True), ("UAS", True))
+        VigorSensorDescription(
+            key=f"interleave_{side}",
+            value=_stream("Interleave Depth", idx),
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+        )
+        for side, idx in (("down", DOWN), ("up", UP))
+    ),
+    *(
+        _counter(f"{key}_{side}", name, idx, seconds)
+        for key, name, seconds in (
+            ("crc", "CRC", False),
+            ("es", "ES", True),
+            ("ses", "SES", True),
+            ("uas", "UAS", True),
+            # Row names as in SuperQ/draytek_exporter; not yet seen on a synced line.
+            ("fec", "RFEC", False),
+            ("hec", "HEC Errors", False),
+            ("los", "LOS Failure", False),
+            ("lof", "LOF Failure", False),
+            ("lpr", "LPR Failure", False),
+            ("lcd", "LCD Failure", False),
+        )
         for side, idx in (("near", NEAR), ("far", FAR))
     ),
 )

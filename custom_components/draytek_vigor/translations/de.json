@@ -80,6 +80,12 @@
       "attenuation_far": {
         "name": "Dämpfung Far End"
       },
+      "interleave_down": {
+        "name": "Interleave-Tiefe Download"
+      },
+      "interleave_up": {
+        "name": "Interleave-Tiefe Upload"
+      },
       "crc_near": {
         "name": "CRC Near End"
       },
@@ -103,6 +109,42 @@
       },
       "uas_far": {
         "name": "UAS Far End"
+      },
+      "fec_near": {
+        "name": "FEC-Korrekturen Near End"
+      },
+      "fec_far": {
+        "name": "FEC-Korrekturen Far End"
+      },
+      "hec_near": {
+        "name": "HEC-Fehler Near End"
+      },
+      "hec_far": {
+        "name": "HEC-Fehler Far End"
+      },
+      "los_near": {
+        "name": "Signalverlust Near End"
+      },
+      "los_far": {
+        "name": "Signalverlust Far End"
+      },
+      "lof_near": {
+        "name": "Rahmenverlust Near End"
+      },
+      "lof_far": {
+        "name": "Rahmenverlust Far End"
+      },
+      "lpr_near": {
+        "name": "Stromausfall Near End"
+      },
+      "lpr_far": {
+        "name": "Stromausfall Far End"
+      },
+      "lcd_near": {
+        "name": "Zellsynchronisationsverlust Near End"
+      },
+      "lcd_far": {
+        "name": "Zellsynchronisationsverlust Far End"
       }
     }
   }

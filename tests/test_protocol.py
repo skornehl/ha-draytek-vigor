@@ -46,6 +46,9 @@ SAMPLE = {
                         {"Name": "CRC", "Near_End": "17", "Far_End": "3"},
                         {"Name": "ES", "Near_End": "4 s", "Far_End": "1 s"},
                         {"Name": "UAS", "Near_End": "", "Far_End": "n/a"},
+                        {"Name": "RFEC", "Near_End": "1024", "Far_End": "88"},
+                        {"Name": "HEC Errors", "Near_End": "0", "Far_End": "0"},
+                        {"Name": "LOS Failure", "Near_End": "2", "Far_End": "0"},
                     ],
                 }
             ]
@@ -97,6 +100,21 @@ def test_parse_status():
     assert s.end["CRC"] == (17, 3)
     assert s.end["ES"] == (4, 1)
     assert s.end["UAS"] == (None, None)
+    assert s.stream["Interleave Depth"] == (1, 1)
+    assert s.end["RFEC"] == (1024, 88)
+    assert s.end["HEC Errors"] == (0, 0)
+    assert s.end["LOS Failure"] == (2, 0)
+
+
+def test_parse_skips_malformed_rows():
+    data = json.loads(json.dumps(SAMPLE))
+    setting = data["ct"][0]["0MONITORING_DSL_GENERAL"][0]
+    setting["Stream_Table"].insert(0, "garbage")
+    setting["End_Table"] = "not a table"
+    data["ct"][0]["0MONITORING_DSL_GENERAL"].insert(0, None)
+    s = protocol.parse_dsl_status(data)
+    assert s.stream["Actual Rate"] == (116797, 46719)
+    assert s.end == {}
 
 
 def test_parse_missing_setting():
