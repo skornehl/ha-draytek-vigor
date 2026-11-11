@@ -12,7 +12,7 @@ counters, plus uptime, DSL connection time, LAN port links, CPU and memory,
 and a button to reboot the modem. Set up in the UI with host, user and
 password over HTTPS; no SNMP, no YAML, no OID lists.
 
-> **Status: 0.3.3.** Running on Home Assistant 2026.10 with a Vigor 167
+> **Status: 0.3.4.** Running on Home Assistant 2026.10 with a Vigor 167
 > (firmware 5.2.9, DSL firmware 5.12.31.0) on a synced VDSL2 17a line, over
 > HTTPS: all entities and reloading are checked there, login, logout and the
 > reboot earlier on the same modem. The DSL status and dashboard responses are
@@ -66,8 +66,19 @@ source: it sees the same traffic, and its own integration reports it.
 
 ## Installation
 
-HACS → ⋮ → *Custom repositories* → `https://github.com/skornehl/ha-draytek-vigor`
-(type *Integration*), install, restart Home Assistant, then
+[![Open in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=skornehl&repository=ha-draytek-vigor&category=integration)
+
+**Home Assistant 2026.11 and later (Marketplace):** *Settings → Marketplace →
+Add from link*, enter `skornehl/ha-draytek-vigor`, select *Add*, then open the
+repository and select *Install*. Adding from a link needs a GitHub connection.
+Once the integration is in the catalog, the Marketplace search finds it
+without this step.
+
+**Before 2026.11 (HACS):** HACS → ⋮ → *Custom repositories* →
+`https://github.com/skornehl/ha-draytek-vigor` (type *Integration*), install,
+restart Home Assistant.
+
+The Marketplace opens the setup right after the install. Otherwise use
 *Settings → Devices & services → Add integration → DrayTek Vigor*.
 
 Entries set up before 0.3.0 keep using HTTP. Switch them with
@@ -145,6 +156,7 @@ The login sends an unsalted SHA-512 hash of the password, which an attacker on
 the LAN could replay over plain HTTP; use HTTPS. SNMP v1/v2c sends its
 community string in clear text.
 
+<!-- ha-marketplace:exclude-start -->
 ## How it talks to the modem
 
 `POST /cgi-bin/webproc.cgi` with `pid`, `op` and `ct`. The modem hands out a
@@ -163,6 +175,7 @@ Each poll reads `pid=0MONITORING_DSL_GENERAL` and then `pid=0DASHBOARD`
 never triggers a new login. Reboot is `pid=0REBOOT`: read the form
 (`op=501`), send it back with `op=555`.
 
+<!-- ha-marketplace:exclude-end -->
 ## Contributing
 
 So far this has only run on one Vigor 167 in bridge mode. Reports from other
@@ -190,7 +203,7 @@ answers are needed:
 2. Open the page of the web UI that shows the value. Note `pid`, `op` and
    `ct` from each request's form data.
 3. Copy each response body into a file and decode it; `ct` decodes the same
-   way (see *How it talks to the modem*):
+   way:
 
    ```bash
    python3 -c 'import base64, json, sys; b = sys.stdin.read().strip(); print(json.dumps(json.loads(base64.b64decode(b[1:] + "=" * int(b[0]))), indent=1))' < response.txt
@@ -216,6 +229,7 @@ names. If no such requests show up, it has a different web API (the Vigor
 2865 router, for example) and needs a client of its own. Open an issue
 anyway with model and firmware, so it is visible which models people want.
 
+<!-- ha-marketplace:exclude-start -->
 ### Code
 
 Pull requests are welcome: a branch `<type>/<slug>`, Conventional Commits,
@@ -233,6 +247,7 @@ English in code and docs.
 - [AGENTS.md](AGENTS.md) has more notes on the protocol and on Home Assistant
   pitfalls.
 
+<!-- ha-marketplace:exclude-end -->
 ## Credits
 
 The web API protocol follows
