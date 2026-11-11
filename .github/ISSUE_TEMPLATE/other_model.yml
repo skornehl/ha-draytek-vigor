@@ -1,0 +1,70 @@
+name: Other model or mode
+description: A Vigor model, firmware or router mode that is not tested yet, or values missing on yours.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. *Contributing* in the README shows how to capture the modem's raw responses.
+
+        **Never paste the login request (`pid=event`, `op=552`), cookies or the `x-csrf-token` header.** The login request carries a hash that works like your password.
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      placeholder: Vigor 167
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware and DSL firmware
+      placeholder: 5.2.9, DSL 5.12.31.0
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Operating mode
+      options:
+        - Bridge
+        - Router (PPPoE)
+        - Router (other)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: line
+    attributes:
+      label: Line type
+      placeholder: VDSL2 17a, ADSL2+, ...
+  - type: input
+    id: versions
+    attributes:
+      label: Integration and Home Assistant version
+      placeholder: 0.3.3 on 2026.10
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The error at setup, or which entities stay empty or look wrong. "Everything works" is welcome too.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: "If setup worked: Settings → Devices & services → DrayTek Vigor → ⋮ → Download diagnostics, then drag the file in here."
+  - type: textarea
+    id: responses
+    attributes:
+      label: Raw responses
+      description: For each request pid, op, the decoded ct and the decoded response, redacted (MAC addresses, serial numbers, public IPs, PPPoE user names, td).
+      render: json
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Privacy
+      options:
+        - label: I removed MAC addresses, serial numbers, public IPs and user names, and included no login request, cookies or tokens.
+          required: true

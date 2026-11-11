@@ -18,8 +18,8 @@ password over HTTPS; no SNMP, no YAML, no OID lists.
 > reboot earlier on the same modem. The DSL status and dashboard responses are
 > captured in `tests/fixtures/`. The protocol follows
 > [SuperQ/draytek_exporter](https://github.com/SuperQ/draytek_exporter). If a
-> value stays empty on your modem, please open an issue with the diagnostics
-> attached.
+> value stays empty on your modem, or you have another model or router mode,
+> see [Contributing](#contributing).
 
 ## Why not just SNMP?
 
@@ -138,7 +138,8 @@ redacted. Attach it to issues about missing or wrong values.
 ## Not yet supported
 
 - Traffic counters (see *Where you still need SNMP*).
-- Other DrayTek models. Routers such as the Vigor 2865 use a different web UI.
+- Other DrayTek models. Routers such as the Vigor 2865 use a different web UI;
+  see [Contributing](#contributing).
 
 The login sends an unsalted SHA-512 hash of the password, which an attacker on
 the LAN could replay over plain HTTP; use HTTPS. SNMP v1/v2c sends its
@@ -161,6 +162,76 @@ Each poll reads `pid=0MONITORING_DSL_GENERAL` and then `pid=0DASHBOARD`
 (both `op=501`) on the same session; the dashboard request is best effort and
 never triggers a new login. Reboot is `pid=0REBOOT`: read the form
 (`op=501`), send it back with `op=555`.
+
+## Contributing
+
+So far this has only run on one Vigor 167 in bridge mode. Reports from other
+setups help most, "it just works" included.
+
+### Another model, firmware or router mode
+
+Open an issue with the
+[*Other model or mode* form](https://github.com/skornehl/ha-draytek-vigor/issues/new?template=other_model.yml).
+It asks for:
+
+- Model, firmware and DSL firmware. With a working setup they are on the
+  device page in Home Assistant, otherwise on the modem's dashboard.
+- Bridge or router mode, and the line type (for example VDSL2 17a, ADSL2+).
+- What happened: the error at setup, or which entities stay empty or look
+  wrong.
+- The diagnostics download, if setup worked.
+
+The diagnostics only hold what the integration already understands. For a
+value it does not read yet, or a model where setup fails, the modem's raw
+answers are needed:
+
+1. Log in to the modem's web UI in a desktop browser, open the developer
+   tools (F12) → *Network* and filter for `webproc.cgi`.
+2. Open the page of the web UI that shows the value. Note `pid`, `op` and
+   `ct` from each request's form data.
+3. Copy each response body into a file and decode it; `ct` decodes the same
+   way (see *How it talks to the modem*):
+
+   ```bash
+   python3 -c 'import base64, json, sys; b = sys.stdin.read().strip(); print(json.dumps(json.loads(base64.b64decode(b[1:] + "=" * int(b[0]))), indent=1))' < response.txt
+   ```
+
+4. Before posting, replace MAC addresses, serial numbers, public IP
+   addresses and PPPoE user names, and set `td` to zeros.
+
+**Never post the login request** (`pid=event`, `op=552`): it carries a hash
+of your password that logs in just like the password. Leave out cookies and
+the `x-csrf-token` header too; copying only response bodies and the `ct` of
+other requests avoids all three.
+
+**Router mode.** In bridge mode the WAN pages (`0WAN_IFNO`, `1WAN_STATUS`, …)
+answer with an error, which is why internet traffic, the WAN IP and the PPPoE
+state are missing (see *Where you still need SNMP*). In router mode they
+should answer. Their responses and the dashboard from a modem in router mode
+are what it takes to add them.
+
+**Other models.** If the web UI also posts to `/cgi-bin/webproc.cgi`, the
+model most likely speaks the same protocol and may only need other field
+names. If no such requests show up, it has a different web API (the Vigor
+2865 router, for example) and needs a client of its own. Open an issue
+anyway with model and firmware, so it is visible which models people want.
+
+### Code
+
+Pull requests are welcome: a branch `<type>/<slug>`, Conventional Commits,
+English in code and docs.
+
+- `custom_components/draytek_vigor/protocol.py` holds the encoding and the
+  parsers and imports neither Home Assistant nor aiohttp, so
+  `tests/test_protocol.py` runs with plain `pytest`.
+- The whole suite needs `pytest-homeassistant-custom-component` in the
+  version pinned in `.github/workflows/validate.yml`, then `pytest -q tests`.
+- Every parser change needs a test with a real, redacted response in
+  `tests/fixtures/` (MAC addresses replaced, `td` zeroed).
+- When touching the reboot, keep `Reboot_With: Current Configuration`: the
+  same form also resets the modem to factory defaults.
+- [AGENTS.md](AGENTS.md) has more notes on the protocol and on Home Assistant
+  pitfalls.
 
 ## Credits
 
