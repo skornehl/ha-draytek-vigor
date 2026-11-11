@@ -46,6 +46,8 @@ SAMPLE = {
                         {"Name": "CRC", "Near_End": "17", "Far_End": "3"},
                         {"Name": "ES", "Near_End": "4 s", "Far_End": "1 s"},
                         {"Name": "UAS", "Near_End": "", "Far_End": "n/a"},
+                        {"Name": "HEC Errors", "Near_End": "0", "Far_End": "0"},
+                        {"Name": "LOS Failure", "Near_End": "2", "Far_End": "0"},
                     ],
                 }
             ]
@@ -97,6 +99,20 @@ def test_parse_status():
     assert s.end["CRC"] == (17, 3)
     assert s.end["ES"] == (4, 1)
     assert s.end["UAS"] == (None, None)
+    assert s.stream["Interleave Depth"] == (1, 1)
+    assert s.end["HEC Errors"] == (0, 0)
+    assert s.end["LOS Failure"] == (2, 0)
+
+
+def test_parse_skips_malformed_rows():
+    data = json.loads(json.dumps(SAMPLE))
+    setting = data["ct"][0]["0MONITORING_DSL_GENERAL"][0]
+    setting["Stream_Table"].insert(0, "garbage")
+    setting["End_Table"] = "not a table"
+    data["ct"][0]["0MONITORING_DSL_GENERAL"].insert(0, None)
+    s = protocol.parse_dsl_status(data)
+    assert s.stream["Actual Rate"] == (116797, 46719)
+    assert s.end == {}
 
 
 def test_parse_missing_setting():
@@ -154,3 +170,67 @@ def test_reboot_accepted():
 
 def test_logout_payload():
     assert protocol.logout_payload("admin") == {"param": [], "ct": [{"Username": "admin"}]}
+
+
+def _fixture(name):
+    return json.loads((Path(__file__).parent / "fixtures" / name).read_text())
+
+
+def test_real_showtime_response():
+    """Captured from a Vigor 167 on a synced VDSL2 17a line, 2026-11-11."""
+    s = protocol.parse_dsl_status(_fixture("dsl_status_showtime_fw5.json"))
+    assert (s.status, s.mode, s.profile, s.annex) == ("Showtime", "VDSL2", "17a", "ANNEX B")
+    assert s.stream["Actual Rate"] == (113742, 46719)
+    assert s.stream["Attainable Rate"] == (124643, 48103)  # unit written "Kbps" here
+    assert s.stream["Interleave Depth"] == (8, 1)
+    assert s.stream["SNR Margin"] == (2.9, 7.3)
+    assert s.stream["Path Mode"] == (None, None)  # "Interleaved"/"Fast" is text
+    assert s.end["Attenuation"] == (11.3, 2.1)
+    assert s.end["CRC"] == (175, 0)
+    assert s.end["ES"] == (20, 0)
+    assert s.end["UAS"] == (127, 127)
+    assert s.end["LOS Failure"] == (0, 0)
+    assert s.end["ReTx"] == (True, True)
+    assert s.end["FECS"] == (None, None)  # "-": not reported on this firmware
+
+
+def test_real_dashboard_response():
+    """Captured from a Vigor 167, firmware 5.2.9, MAC replaced."""
+    data = _fixture("dashboard_fw5_2_9.json")
+    assert protocol.is_ok(data)
+    s = protocol.parse_dashboard(data)
+    assert (s.model, s.firmware, s.mac) == ("Vigor167", "5.2.9", "00:1D:AA:00:00:01")
+    assert s.uptime == 1005454
+    assert s.line_uptime == 11 * 86400 + 15 * 3600 + 15 * 60 + 3
+    assert (s.cpu, s.memory) == (0, 90)
+    assert s.ports == {"LAN1": protocol.PORT_1G, "LAN2": protocol.PORT_1G}
+
+
+def test_dashboard_port_leds():
+    data = _fixture("dashboard_fw5_2_9.json")
+    data["ct"][0]["2NAMEPLATE"][0]["LEDs"] = [
+        {"Name": "DSL", "Action": "2"},
+        {"Name": "LAN1", "Action": "0"},
+        {"Name": "LAN2", "Action": "2"},
+        {"Name": "LAN3", "Action": "9"},
+        "garbage",
+    ]
+    s = protocol.parse_dashboard(data)
+    assert s.ports == {"LAN1": protocol.PORT_DOWN, "LAN2": protocol.PORT_100M, "LAN3": None}
+
+
+def test_dashboard_missing_blocks():
+    s = protocol.parse_dashboard({"rid": "0000", "ct": [{"1SYSTEM_INFO": [{"Firmware": "5.2.9"}]}]})
+    assert s.firmware == "5.2.9"
+    assert s.uptime is None and s.line_uptime is None and s.ports == {}
+    for data in ({"rid": "0000"}, {"rid": "0000", "ct": [{}]}, {"rid": "0000", "ct": ["x"]}):
+        with pytest.raises(protocol.ProtocolError):
+            protocol.parse_dashboard(data)
+
+
+@pytest.mark.parametrize(
+    ("value", "seconds"),
+    [("11d 15h 15m  3s", 1005303), ("0d 0h 1m 5s", 65), ("42s", 42), (1005454, 1005454), ("--", None), ("", None), (None, None)],
+)
+def test_parse_duration(value, seconds):
+    assert protocol.parse_duration(value) == seconds

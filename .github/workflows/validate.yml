@@ -8,16 +8,14 @@ on:
 jobs:
   hacs:
     name: HACS
-    # The HACS action refuses private repositories; skip instead of failing
-    # until the repository is made public.
-    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
+      # No ignored checks: the HACS default list only takes a run without
+      # them. The brands check finds custom_components/draytek_vigor/brand/.
       - name: HACS validation
         uses: hacs/action@main
         with:
           category: integration
-          ignore: brands
 
   hassfest:
     name: Hassfest
@@ -34,5 +32,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install pytest
+      # Pinned: each release pins one Home Assistant version (0.13.316 = 2026.2.3).
+      - run: pip install pytest-homeassistant-custom-component==0.13.316
       - run: pytest -q tests

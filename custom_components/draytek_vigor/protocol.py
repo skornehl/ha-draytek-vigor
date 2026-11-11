@@ -23,6 +23,7 @@ import base64
 from dataclasses import dataclass, field
 import hashlib
 import json
+import re
 from typing import Any
 
 PATH = "/cgi-bin/webproc.cgi"
@@ -161,10 +162,17 @@ def _option(value: Any) -> bool | None:
     return None
 
 
+def _rows(table: Any) -> list[dict[str, Any]]:
+    """The dict rows of a Stream_Table/End_Table; anything else is skipped."""
+    if not isinstance(table, list):
+        return []
+    return [row for row in table if isinstance(row, dict)]
+
+
 def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
     try:
         general = data["ct"][0]["0MONITORING_DSL_GENERAL"]
-        setting = next(e for e in general if e.get("Name") == "Setting")
+        setting = next(e for e in general if isinstance(e, dict) and e.get("Name") == "Setting")
     except (KeyError, IndexError, TypeError, StopIteration) as err:
         raise ProtocolError("no DSL 'Setting' block in response") from err
 
@@ -176,11 +184,11 @@ def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
         dsl_version=setting.get("DSL_Version"),
         raw=setting,
     )
-    for row in setting.get("Stream_Table") or []:
+    for row in _rows(setting.get("Stream_Table")):
         if name := row.get("Name"):
             conv = _kbps if name.endswith("Rate") else _number
             status.stream[name] = (conv(row.get("Downstream")), conv(row.get("Upstream")))
-    for row in setting.get("End_Table") or []:
+    for row in _rows(setting.get("End_Table")):
         if name := row.get("Name"):
             near, far = row.get("Near_End"), row.get("Far_End")
             if name in ("Bitswap", "ReTx"):
@@ -188,3 +196,93 @@ def parse_dsl_status(data: dict[str, Any]) -> DslStatus:
             else:
                 status.end[name] = (_number(near), _number(far))
     return status
+
+
+# The dashboard of the web UI: system info, LAN port LEDs, CPU and memory, and
+# the line uptime. In bridge mode the modem has no WAN interface, so the WAN
+# pids (0WAN_IFNO, 1WAN_STATUS, ...) answer rid 2010_* and the LAN usage block
+# only counts traffic to the modem itself (br0), not the bridged internet
+# traffic - it is left out on purpose. Seen on a Vigor 167, firmware 5.2.9,
+# 2026-11-11 (tests/fixtures/dashboard_fw5_2_9.json).
+DASHBOARD_PID = "0DASHBOARD"
+DASHBOARD_OP = "501"
+DASHBOARD_QUERY = {"param": [], "ct": [{DASHBOARD_PID: []}]}
+
+# LED "Action" of the port picture: 0 off, 1 green (1G, or VDSL for the DSL
+# LED), 2 orange (10/100M, or ADSL). Taken from the web UI's setLedStatus().
+PORT_DOWN = "down"
+PORT_100M = "10_100m"
+PORT_1G = "1g"
+_PORT_LINK = {"0": PORT_DOWN, "1": PORT_1G, "2": PORT_100M}
+
+_DURATION_UNITS = {"d": 86400, "h": 3600, "m": 60, "s": 1}
+_DURATION = re.compile(r"(\d+)\s*([dhms])\b")
+
+
+@dataclass
+class SystemStatus:
+    model: str | None = None
+    firmware: str | None = None
+    mac: str | None = None
+    uptime: int | None = None  # seconds since boot
+    line_uptime: int | None = None  # seconds since the last DSL sync
+    cpu: float | None = None  # percent
+    memory: float | None = None  # percent
+    # LAN port name ("LAN1") -> PORT_DOWN, PORT_100M, PORT_1G or None (unknown LED state)
+    ports: dict[str, str | None] = field(default_factory=dict)
+
+
+def parse_duration(value: Any) -> int | None:
+    """'11d 15h 15m  3s' -> 1005303 seconds; '--' or junk -> None."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if not isinstance(value, str):
+        return None
+    parts = _DURATION.findall(value.lower())
+    if not parts:
+        return None
+    return sum(int(number) * _DURATION_UNITS[unit] for number, unit in parts)
+
+
+def _block(blocks: dict[str, Any], pid: str) -> dict[str, Any]:
+    """First record of a dashboard block, {} when missing or malformed."""
+    rows = blocks.get(pid)
+    if isinstance(rows, list) and rows and isinstance(rows[0], dict):
+        return rows[0]
+    return {}
+
+
+def _text(value: Any) -> str | None:
+    return value.strip() or None if isinstance(value, str) else None
+
+
+def parse_dashboard(data: dict[str, Any]) -> SystemStatus:
+    try:
+        blocks = data["ct"][0]
+    except (KeyError, IndexError, TypeError) as err:
+        raise ProtocolError("no dashboard blocks in response") from err
+    if not isinstance(blocks, dict):
+        raise ProtocolError("dashboard blocks are not an object")
+
+    nameplate = _block(blocks, "2NAMEPLATE")
+    system = _block(blocks, "1SYSTEM_INFO")
+    dsl = _block(blocks, "1DSL_STS_INFO_LITE")
+    usage = _block(blocks, "1SYSTEM_USAGE")
+    if not (nameplate or system or dsl or usage):
+        raise ProtocolError("dashboard has none of the expected blocks")
+
+    ports: dict[str, str | None] = {}
+    for led in nameplate.get("LEDs") or []:
+        if isinstance(led, dict) and str(led.get("Name", "")).startswith("LAN"):
+            ports[led["Name"]] = _PORT_LINK.get(str(led.get("Action")))
+
+    return SystemStatus(
+        model=_text(nameplate.get("Model")),
+        firmware=_text(system.get("Firmware")),
+        mac=_text(system.get("LAN_MAC")),
+        uptime=parse_duration(system.get("System_Uptime")),
+        line_uptime=parse_duration(dsl.get("Line_Uptime")),
+        cpu=_number(usage.get("CPU_Utilization")),
+        memory=_number(usage.get("MEMORY_Utilization")),
+        ports=ports,
+    )

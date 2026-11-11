@@ -3,7 +3,15 @@ from __future__ import annotations
 
 import aiohttp
 
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_PASSWORD,
+    CONF_SSL,
+    CONF_USERNAME,
+    CONF_VERIFY_SSL,
+    EVENT_HOMEASSISTANT_STOP,
+    Platform,
+)
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
@@ -19,10 +27,22 @@ def create_client(hass: HomeAssistant, data: dict, auto_cleanup: bool = True) ->
     # session: during entry setup it is detached on unload (auto_cleanup); the
     # config flow passes auto_cleanup=False and detaches it via async_close.
     # Never close() it - HA warns, the connector is shared.
+    # Entries from before 0.3.0 have no CONF_SSL and keep plain HTTP. The
+    # modem's own certificate is self-signed (and expired), so verification
+    # is only on when the user asks for it.
     session = async_create_clientsession(
-        hass, auto_cleanup=auto_cleanup, cookie_jar=aiohttp.CookieJar(unsafe=True)
+        hass,
+        verify_ssl=data.get(CONF_VERIFY_SSL, False),
+        auto_cleanup=auto_cleanup,
+        cookie_jar=aiohttp.CookieJar(unsafe=True),
     )
-    return VigorClient(session, normalize_host(data[CONF_HOST]), data[CONF_USERNAME], data[CONF_PASSWORD])
+    return VigorClient(
+        session,
+        normalize_host(data[CONF_HOST]),
+        data[CONF_USERNAME],
+        data[CONF_PASSWORD],
+        use_https=data.get(CONF_SSL, False),
+    )
 
 
 def normalize_host(host: str) -> str:

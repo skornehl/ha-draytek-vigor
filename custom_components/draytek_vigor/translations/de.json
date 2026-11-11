@@ -3,9 +3,11 @@
     "step": {
       "user": {
         "title": "DrayTek Vigor",
-        "description": "Web-Zugang des Modems. Die Verwaltung per HTTP muss aktiv und „Force HTTPS“ aus sein.",
+        "description": "Web-Zugang des Modems. HTTPS verwenden, außer die Verwaltung per HTTPS ist am Modem aus; das Zertifikat ist selbstsigniert, die Prüfung also aus lassen.",
         "data": {
           "host": "Host",
+          "ssl": "HTTPS verwenden",
+          "verify_ssl": "Zertifikat prüfen",
           "username": "Benutzername",
           "password": "Passwort"
         }
@@ -17,22 +19,35 @@
           "username": "Benutzername",
           "password": "Passwort"
         }
+      },
+      "reconfigure": {
+        "title": "DrayTek Vigor",
+        "description": "Adresse oder HTTPS ändern. Benutzername und Passwort bleiben.",
+        "data": {
+          "host": "Host",
+          "ssl": "HTTPS verwenden",
+          "verify_ssl": "Zertifikat prüfen"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Web-API des Modems nicht erreichbar (ist „Force HTTPS“ an?)",
+      "cannot_connect": "Web-API des Modems nicht erreichbar (falsche Adresse oder HTTP/HTTPS aus?)",
       "invalid_auth": "Benutzername oder Passwort falsch",
       "unknown": "Unerwarteter Fehler, siehe Log"
     },
     "abort": {
       "already_configured": "Dieses Modem ist schon eingerichtet",
-      "reauth_successful": "Anmeldung aktualisiert"
+      "reauth_successful": "Anmeldung aktualisiert",
+      "reconfigure_successful": "Verbindung aktualisiert"
     }
   },
   "entity": {
     "binary_sensor": {
       "dsl_sync": {
         "name": "DSL-Synchronisation"
+      },
+      "lan_link": {
+        "name": "{port}-Verbindung"
       }
     },
     "button": {
@@ -80,6 +95,12 @@
       "attenuation_far": {
         "name": "Dämpfung Far End"
       },
+      "interleave_down": {
+        "name": "Interleave-Tiefe Download"
+      },
+      "interleave_up": {
+        "name": "Interleave-Tiefe Upload"
+      },
       "crc_near": {
         "name": "CRC Near End"
       },
@@ -103,6 +124,56 @@
       },
       "uas_far": {
         "name": "UAS Far End"
+      },
+      "hec_near": {
+        "name": "HEC-Fehler Near End"
+      },
+      "hec_far": {
+        "name": "HEC-Fehler Far End"
+      },
+      "los_near": {
+        "name": "Signalverlust Near End"
+      },
+      "los_far": {
+        "name": "Signalverlust Far End"
+      },
+      "lof_near": {
+        "name": "Rahmenverlust Near End"
+      },
+      "lof_far": {
+        "name": "Rahmenverlust Far End"
+      },
+      "lpr_near": {
+        "name": "Stromausfall Near End"
+      },
+      "lpr_far": {
+        "name": "Stromausfall Far End"
+      },
+      "lcd_near": {
+        "name": "Zellsynchronisationsverlust Near End"
+      },
+      "lcd_far": {
+        "name": "Zellsynchronisationsverlust Far End"
+      },
+      "line_up_since": {
+        "name": "DSL verbunden seit"
+      },
+      "last_restart": {
+        "name": "Letzter Neustart"
+      },
+      "cpu_usage": {
+        "name": "CPU-Auslastung"
+      },
+      "memory_usage": {
+        "name": "Speicherauslastung"
+      },
+      "lan_speed": {
+        "name": "{port}-Geschwindigkeit",
+        "state": {
+          "down": "Getrennt",
+          "10_100m": "10/100 Mbit/s",
+          "1g": "1 Gbit/s"
+        }
       }
     }
   }
