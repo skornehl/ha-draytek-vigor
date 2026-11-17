@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/skornehl/ha-draytek-vigor?style=for-the-badge&color=6366F1)](https://github.com/skornehl/ha-draytek-vigor/releases)
 [![Home Assistant 2025.6+](https://img.shields.io/badge/Home%20Assistant-2025.6%2B-18BCF2?style=for-the-badge&logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
 [![Checks](https://img.shields.io/github/actions/workflow/status/skornehl/ha-draytek-vigor/validate.yml?branch=main&style=for-the-badge&label=checks)](https://github.com/skornehl/ha-draytek-vigor/actions/workflows/validate.yml)
-[![License](https://img.shields.io/github/license/skornehl/ha-draytek-vigor?style=for-the-badge&color=9333EA)](LICENSE)
+[![License](https://img.shields.io/github/license/skornehl/ha-draytek-vigor?style=for-the-badge&color=9333EA)](https://github.com/skornehl/ha-draytek-vigor/blob/main/LICENSE)
 
 Shows a **DrayTek Vigor 167** modem (firmware 5.x) in Home Assistant: DSL
 sync, sync and attainable rates, SNR margin, attenuation and the line error
