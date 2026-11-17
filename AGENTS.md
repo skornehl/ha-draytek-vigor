@@ -7,6 +7,11 @@ Home Assistant custom integration (HACS) for the DrayTek Vigor 167 DSL modem.
   No `Co-Authored-By` trailer or other AI-agent reference in commit messages;
   a PR description may name the tool, but never links a session.
   English in code and docs.
+- Releases: tag `vX.Y.Z` with the same version in `manifest.json`. On
+  publish, `.github/workflows/release.yml` attaches `draytek_vigor.zip` (the
+  integration directory, files in the ZIP root); `hacs.json` sets
+  `zip_release`, so HACS and the Marketplace install from it and count its
+  downloads. A tag that does not match the manifest gets no ZIP.
 - `custom_components/draytek_vigor/protocol.py` holds encoding and parsing and
   must not import Home Assistant or aiohttp, so `tests/test_protocol.py` runs
   without them. Every parser change needs a test.
